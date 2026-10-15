@@ -1,0 +1,166 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "email": "user@example.com",
+      "password": "$2b$10$7c7CSATue24vaP18Ty9Uu.ld5TaPPfp4UFr.fumh0WgJ045ZJyrLi",
+      "phone": "9876543210",
+      "address": "123 Main St, City"
+    }
+  ],
+  "restaurants": [
+    {
+      "id": "1",
+      "name": "Pizza Palace",
+      "image": "https://images.unsplash.com/photo-1564936281288-7271eba65f84?w=400",
+      "rating": 4.5,
+      "deliveryTime": "30-45 min",
+      "deliveryFee": 2,
+      "description": "Best pizza in town",
+      "cuisine": "Italian"
+    },
+    {
+      "id": "2",
+      "name": "Burger Bash",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400",
+      "rating": 4.3,
+      "deliveryTime": "25-35 min",
+      "deliveryFee": 2,
+      "description": "Juicy burgers and fries",
+      "cuisine": "American"
+    },
+    {
+      "id": "3",
+      "name": "Sushi Supreme",
+      "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400",
+      "rating": 4.8,
+      "deliveryTime": "40-50 min",
+      "deliveryFee": 3,
+      "description": "Fresh sushi daily",
+      "cuisine": "Japanese"
+    },
+    {
+      "id": "4",
+      "name": "Spice Route",
+      "image": "https://images.unsplash.com/photo-1585937421612-70a19fb6930b?w=400",
+      "rating": 4.6,
+      "deliveryTime": "35-45 min",
+      "deliveryFee": 2,
+      "description": "Authentic Indian cuisine",
+      "cuisine": "Indian"
+    }
+  ],
+  "menuItems": [
+    {
+      "id": "1",
+      "restaurantId": "1",
+      "name": "Margherita Pizza",
+      "price": 12.99,
+      "description": "Classic cheese pizza",
+      "image": "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=300",
+      "category": "Pizza"
+    },
+    {
+      "id": "2",
+      "restaurantId": "1",
+      "name": "Pepperoni Pizza",
+      "price": 14.99,
+      "description": "Loaded with pepperoni",
+      "image": "https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=300",
+      "category": "Pizza"
+    },
+    {
+      "id": "3",
+      "restaurantId": "1",
+      "name": "Garlic Bread",
+      "price": 5.99,
+      "description": "Crispy garlic bread",
+      "image": "https://images.unsplash.com/photo-1599599810694-b5ac4dd64359?w=300",
+      "category": "Appetizers"
+    },
+    {
+      "id": "4",
+      "restaurantId": "2",
+      "name": "Classic Burger",
+      "price": 9.99,
+      "description": "Juicy beef patty",
+      "image": "https://images.unsplash.com/photo-1550547990-294e817617e6?w=300",
+      "category": "Burgers"
+    },
+    {
+      "id": "5",
+      "restaurantId": "2",
+      "name": "Double Cheese Burger",
+      "price": 11.99,
+      "description": "Double patty with cheese",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300",
+      "category": "Burgers"
+    },
+    {
+      "id": "6",
+      "restaurantId": "2",
+      "name": "French Fries",
+      "price": 3.99,
+      "description": "Crispy golden fries",
+      "image": "https://images.unsplash.com/photo-1576107232684-871b8e859400?w=300",
+      "category": "Sides"
+    },
+    {
+      "id": "7",
+      "restaurantId": "3",
+      "name": "California Roll",
+      "price": 8.99,
+      "description": "Crab, avocado, cucumber",
+      "image": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=300",
+      "category": "Sushi"
+    },
+    {
+      "id": "8",
+      "restaurantId": "3",
+      "name": "Spicy Tuna Roll",
+      "price": 9.99,
+      "description": "Spicy tuna and rice",
+      "image": "https://images.unsplash.com/photo-1553621042-f6b4b1c905cb?w=300",
+      "category": "Sushi"
+    },
+    {
+      "id": "9",
+      "restaurantId": "3",
+      "name": "Miso Soup",
+      "price": 4.99,
+      "description": "Traditional miso soup",
+      "image": "https://images.unsplash.com/photo-1551632440-5bcb9b19ac4c?w=300",
+      "category": "Soup"
+    },
+    {
+      "id": "10",
+      "restaurantId": "4",
+      "name": "Butter Chicken",
+      "price": 13.99,
+      "description": "Creamy tomato sauce",
+      "image": "https://images.unsplash.com/photo-1565557623814-dea6bde51a62?w=300",
+      "category": "Curry"
+    },
+    {
+      "id": "11",
+      "restaurantId": "4",
+      "name": "Tandoori Chicken",
+      "price": 12.99,
+      "description": "Spiced grilled chicken",
+      "image": "https://images.unsplash.com/photo-1585937421612-70a19fb6930b?w=300",
+      "category": "Curry"
+    },
+    {
+      "id": "12",
+      "restaurantId": "4",
+      "name": "Naan Bread",
+      "price": 3.99,
+      "description": "Freshly baked naan",
+      "image": "https://images.unsplash.com/photo-1543353521-104e5d5ea118?w=300",
+      "category": "Bread"
+    }
+  ],
+  "orders": [],
+  "cart": []
+}
