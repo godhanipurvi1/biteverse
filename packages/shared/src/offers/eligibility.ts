@@ -22,7 +22,7 @@ export interface Offer {
 
 export interface OfferEligibility {
   eligible: boolean;
-  reason?: string; // e.g., "Offer expired" or "Add ?80 more to use this offer"
+  reason?: string; // e.g., "Offer expired" or "Add ₹80 more to use this offer"
 }
 
 export function isOfferExpired(offer: Offer, now: Date = new Date()): boolean {
@@ -139,5 +139,9 @@ export function bestOfferForCart(
     return a.offer.endsAt.getTime() - b.offer.endsAt.getTime();
   });
 
-  return eligible[0].offer;
+  const best = eligible[0];
+  if (!best) {
+    return null;
+  }
+  return best.offer;
 }
