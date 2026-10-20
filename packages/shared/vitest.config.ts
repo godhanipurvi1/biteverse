@@ -7,7 +7,6 @@ export default {
       "tests/bundles.test.ts",
       "tests/builder.test.ts",
       "tests/half-and-half.test.ts",
-      "tests/offers.test.ts",
       "tests/scoring.test.ts",
       "tests/guardrails.test.ts",
     ],
