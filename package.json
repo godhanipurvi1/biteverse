@@ -1,14 +1,18 @@
 {
   "name": "biteverse",
+  "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "test": "turbo run test"
+    "dev": "pnpm --parallel --filter @biteverse/api --filter @biteverse/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "seed": "pnpm --filter @biteverse/api seed"
   },
   "devDependencies": {
-    "turbo": "^2.1.0"
+    "typescript": "^5.9.3"
   }
 }
