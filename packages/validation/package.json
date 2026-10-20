@@ -1,6 +1,0 @@
-{
-    "private":  true,
-    "name":  "@biteverse/validation",
-    "version":  "0.0.0",
-    "main":  "src/index.ts"
-}
