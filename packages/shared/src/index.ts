@@ -11,3 +11,6 @@ export * from "./pricing/gst.js";
 export * from "./pricing/loyalty.js";
 export * from "./pricing/gift-card.js";
 export * from "./pricing/compute-totals.js";
+
+// Time
+export * from "./time/index.js";

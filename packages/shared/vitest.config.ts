@@ -1,20 +1,15 @@
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
+// Stub test files stay excluded until they are written. Remove a line when its file has tests.
+export default {
   test: {
-    include: ["tests/**/*.test.ts"],
-    // Empty stub files make vitest fail ("No test suite found").
-    // Delete a line here when you write that test file.
     exclude: [
       "**/node_modules/**",
+      "**/dist/**",
       "tests/bundles.test.ts",
       "tests/builder.test.ts",
       "tests/half-and-half.test.ts",
       "tests/offers.test.ts",
-      "tests/slots.test.ts",
       "tests/scoring.test.ts",
       "tests/guardrails.test.ts",
     ],
-    passWithNoTests: true,
   },
-});
+};
