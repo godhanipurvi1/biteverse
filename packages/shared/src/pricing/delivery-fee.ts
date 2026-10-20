@@ -1,7 +1,6 @@
 import { assertNonNegativePaise } from "../money/paise.js";
 import type { Paise } from "../money/paise.js";
-
-export type OrderMode = "delivery" | "pickup";
+import type { OrderMode } from "../orders/order-status.js";
 
 export const DELIVERY_FEE_PAISE = 4000;
 export const FREE_DELIVERY_FROM_PAISE = 50000;

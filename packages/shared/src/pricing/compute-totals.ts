@@ -3,7 +3,7 @@ import type { Paise } from "../money/paise.js";
 import { computeDiscount } from "./discount.js";
 import type { DiscountRule } from "./discount.js";
 import { deliveryFee, packagingFee } from "./delivery-fee.js";
-import type { OrderMode } from "./delivery-fee.js";
+import type { OrderMode } from "../orders/order-status.js";
 import { computeGst } from "./gst.js";
 import { redeemLoyalty } from "./loyalty.js";
 import { applyGiftCard } from "./gift-card.js";
