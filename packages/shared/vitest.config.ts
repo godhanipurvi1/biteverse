@@ -4,7 +4,6 @@ export default {
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
-      "tests/bundles.test.ts",
       "tests/builder.test.ts",
       "tests/half-and-half.test.ts",
       "tests/scoring.test.ts",
