@@ -3,6 +3,7 @@ import { getServerUser } from "@/features/auth/server-session";
 import styles from "@/features/auth/auth.module.css";
 import { LogoutButton } from "@/features/auth/ui/LogoutButton";
 import { AdminStatsCards } from "@/features/admin/AdminStats";
+import { AdminOverview } from "@/features/admin/AdminOverview";
 
 const comingSoon = ["Menu", "Riders", "Reviews", "Reports"];
 
@@ -21,6 +22,8 @@ export default async function AdminPage() {
       </div>
 
       <AdminStatsCards />
+
+      <AdminOverview />
 
       <div className={styles.grid}>
         <Link href="/admin/orders" className={styles.card}>
