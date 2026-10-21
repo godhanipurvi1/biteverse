@@ -11,7 +11,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getOrder(id).then(setOrder).catch(console.error).finally(() => setLoading(false));
+    let alive = true;
+    const load = () =>
+      getOrder(id)
+        .then((o) => { if (alive) setOrder(o); })
+        .catch(console.error)
+        .finally(() => { if (alive) setLoading(false); });
+    load();
+    const timer = setInterval(load, 5000);
+    return () => { alive = false; clearInterval(timer); };
   }, [id]);
 
   const handleReorder = async () => {
