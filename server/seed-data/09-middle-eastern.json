@@ -1,0 +1,4 @@
+{"name":"Shawarma House","address":"Adajan, Surat","categories":["middle-eastern"],"deliveryMinutes":{"min":25,"max":35},"costForTwo":400,"rating":4.1,"offerLabel":"",
+"menu":[["Chicken Shawarma Roll",129],["Chicken Shawarma Plate",189],["Paneer Shawarma Roll",119],["Falafel Wrap",129],["Falafel Plate",169],["Hummus with Pita",149],["Baba Ganoush",159],["Tabbouleh Salad",139],["Fattoush Salad",149],["Chicken Kebab Roll",149],
+["Mutton Seekh Kebab Platter",249],["Chicken Shish Tawook",269],["Lamb Kofta Plate",299],["Grilled Chicken Platter",279],["Chicken Mutton Mixed Grill",399],["Chicken Mandi",299],["Mutton Mandi",399],["Veg Mandi",229],["Arabic Rice",99],["Garlic Sauce Pita",89],
+["Pita Bread",39],["Stuffed Vine Leaves",179],["Lentil Soup",109],["Chicken Soup",119],["Hummus Chicken Bowl",219],["Veg Mezze Platter",259],["Baklava",129],["Kunafa",169],["Mint Lemonade",79],["Ayran",69]]}

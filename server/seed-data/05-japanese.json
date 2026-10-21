@@ -1,0 +1,4 @@
+{"name":"Sushi Zen","address":"Vesu, Surat","categories":["japanese"],"deliveryMinutes":{"min":35,"max":45},"costForTwo":900,"rating":4.5,"offerLabel":"",
+"menu":[["Veg Sushi Roll",249],["Cucumber Maki",199],["Avocado Maki",229],["California Crab Roll",299],["Salmon Roll",349],["Tuna Roll",349],["Prawn Tempura Roll",329],["Veg Tempura Roll",269],["Dragon Roll Prawn",379],["Rainbow Roll Salmon",399],
+["Salmon Nigiri",279],["Tuna Nigiri",279],["Edamame",149],["Miso Soup",129],["Veg Ramen",299],["Chicken Ramen",329],["Tonkotsu Pork Ramen",379],["Veg Udon",279],["Chicken Udon",309],["Yakisoba Veg",249],
+["Yakisoba Chicken",279],["Teriyaki Chicken Rice Bowl",299],["Teriyaki Paneer Rice Bowl",279],["Katsu Chicken Curry",339],["Veg Gyoza",199],["Chicken Gyoza",229],["Takoyaki Octopus",249],["Mochi",149],["Matcha Ice Cream",179],["Green Tea",99]]}

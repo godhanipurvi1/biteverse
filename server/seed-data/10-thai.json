@@ -1,0 +1,4 @@
+{"name":"Bangkok Bowl","address":"Vesu, Surat","categories":["thai"],"deliveryMinutes":{"min":30,"max":40},"costForTwo":600,"rating":4.3,"offerLabel":"",
+"menu":[["Thai Green Curry Veg",249],["Thai Green Curry Chicken",289],["Thai Red Curry Veg",249],["Thai Red Curry Chicken",289],["Yellow Curry Veg",249],["Massaman Curry Chicken",299],["Pad Thai Veg",229],["Pad Thai Chicken",259],["Pad Thai Prawn",299],["Pad See Ew Veg",229],
+["Thai Basil Fried Rice Veg",199],["Thai Basil Chicken Rice",239],["Pineapple Fried Rice",219],["Khao Suey Veg",249],["Khao Suey Chicken",279],["Tom Yum Soup Veg",149],["Tom Yum Soup Chicken",179],["Tom Kha Soup Veg",159],["Tom Kha Soup Chicken",189],["Som Tam Papaya Salad",169],
+["Thai Spring Rolls",149],["Chicken Satay",219],["Paneer Satay",199],["Thai Fish Cakes",249],["Chicken Wings Thai Style",229],["Steamed Jasmine Rice",99],["Sticky Rice with Mango",169],["Coconut Ice Cream",129],["Thai Iced Tea",99],["Lemongrass Cooler",89]]}

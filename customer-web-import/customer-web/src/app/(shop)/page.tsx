@@ -1,387 +1,360 @@
+﻿"use client";
 
-"use client";
+import { useEffect, useMemo, useState } from "react";
+import TopBar from "../../components/TopBar";
+import Sidebar from "../../components/Sidebar";
+import HeroScene from "../../components/HeroScene";
+import Toast from "../../components/Toast";
+import Offers from "../../components/Offers";
+import LiveTracking from "../../components/LiveTracking";
+import CartPanel from "../../components/CartPanel";
+import { useCart, saveCart, changeQty, groupByRestaurant, cartDeliveryFeeOf } from "../../lib/cart";
+import MenuSheet from "../../components/MenuSheet";
 
-import { useEffect, useState } from "react";
+type MenuItem = { _id: string; name: string; price: number; description?: string };
 
 type Restaurant = {
-  _id?: string;
-  id?: string;
-  name?: string;
-  title?: string;
-  description?: string;
-  cuisine?: string | string[];
-  cuisines?: string[];
-  rating?: number | string;
+  _id: string;
+  name: string;
   address?: string;
-  location?: string;
-  image?: string;
-  imageUrl?: string;
-  coverImage?: string;
+  rating?: number;
   isOpen?: boolean;
-  deliveryTime?: string;
-  deliveryFee?: number | string;
+  categories?: string[];
+  deliveryMinutes?: { min?: number; max?: number };
+  costForTwo?: number;
+  offerLabel?: string;
+  menu?: MenuItem[];
 };
 
-type ApiResult = {
-  status?: string;
-  app?: string;
-  message?: string;
-};
-
-type RestaurantApiResult = {
+type RestaurantResponse = {
   success?: boolean;
   count?: number;
   data?: Restaurant[];
   message?: string;
 };
 
-export default function HomePage() {
-  const [apiStatus, setApiStatus] = useState("Checking backend...");
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [restaurantStatus, setRestaurantStatus] = useState(
-    "Loading restaurants..."
-  );
-  const [search, setSearch] = useState("");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const WORDS = ["thali", "biryani", "pizza", "burgers", "noodles", "dessert"];
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const TINTS = ["var(--tint-a)", "var(--tint-b)", "var(--tint-c)", "var(--tint-d)"];
+const DESKTOP = "(min-width: 1024px)";
+
+function labelFor(value: string) {
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export default function HomePage() {
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loadStatus, setLoadStatus] = useState("Loading restaurants...");
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [diet, setDiet] = useState<"all" | "veg" | "nonveg">("all");
+  const [favourites, setFavourites] = useState<string[]>([]);
+  const [wordIndex, setWordIndex] = useState(0);
+  const [navOpen, setNavOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const cart = useCart();
+  const [cartOpen, setCartOpen] = useState(false);
+  const [menuFor, setMenuFor] = useState<Restaurant | null>(null);
+
+  const cartCount = cart ? cart.lines.reduce((n, l) => n + l.qty, 0) : 0;
+  const cartSubtotal = cart ? cart.lines.reduce((n, l) => n + l.qty * l.price, 0) : 0;
 
   useEffect(() => {
-    if (!apiUrl) {
-      setApiStatus("API URL is not configured");
-      setRestaurantStatus("Configure the API URL to load restaurants.");
-      return;
-    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = setInterval(() => setWordIndex((i) => (i + 1) % WORDS.length), 2200);
+    return () => clearInterval(timer);
+  }, []);
 
-    async function loadData() {
-      try {
-        const healthResponse = await fetch(`${apiUrl}/api/health`);
-
-        if (!healthResponse.ok) {
-          throw new Error("Backend health check failed");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/restaurants`, { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json() as Promise<RestaurantResponse>;
+      })
+      .then((json) => {
+        const list = json.data ?? [];
+        setRestaurants(list);
+        setLoadStatus(list.length ? "" : "No restaurants are available yet.");
+      })
+      .catch((err: Error) => {
+        if (err.name !== "AbortError") {
+          setLoadStatus("Could not load restaurants. Check that the backend is running on port 5000.");
         }
+      });
+    return () => controller.abort();
+  }, []);
 
-        const healthData: ApiResult = await healthResponse.json();
-        setApiStatus(
-          healthData.status === "ok" || healthData.status === "success"
-            ? "Backend connected successfully"
-            : `Backend responded: ${healthData.status || "Available"}`
-        );
-      } catch {
-        setApiStatus("Backend connection failed");
-      }
-
-      try {
-        const response = await fetch(`${apiUrl}/api/restaurants`);
-
-        if (!response.ok) {
-          throw new Error("Could not fetch restaurants");
-        }
-
-        const result: RestaurantApiResult = await response.json();
-        const restaurantList = Array.isArray(result)
-          ? result
-          : result.data;
-
-        if (!Array.isArray(restaurantList)) {
-          throw new Error(result.message || "Invalid restaurant response");
-        }
-
-        setRestaurants(restaurantList);
-        setRestaurantStatus(
-          restaurantList.length
-            ? `${restaurantList.length} restaurants found`
-            : "No restaurants are available yet."
-        );
-      } catch {
-        setRestaurants([]);
-        setRestaurantStatus(
-          "Could not load restaurants. Check that the restaurant API is running."
-        );
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setNavOpen(false);
+        setMenuFor(null);
+        setCartOpen(false);
       }
     }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
-    loadData();
-  }, [apiUrl]);
+  function onMenu() {
+    if (window.matchMedia(DESKTOP).matches) setCollapsed((c) => !c);
+    else setNavOpen(true);
+  }
 
-  const filteredRestaurants = restaurants.filter((restaurant) => {
-    const cuisineText = Array.isArray(restaurant.cuisine)
-      ? restaurant.cuisine.join(" ")
-      : restaurant.cuisine || "";
 
-    const searchableText = [
-      restaurant.name,
-      restaurant.title,
-      restaurant.description,
-      cuisineText,
-      ...(restaurant.cuisines || []),
-      restaurant.address,
-      restaurant.location,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
 
-    return searchableText.includes(search.toLowerCase());
-  });
+
+  function toggleFavourite(r: Restaurant) {
+    const added = !favourites.includes(r._id);
+    setFavourites((prev) => (added ? [...prev, r._id] : prev.filter((x) => x !== r._id)));
+    setToast(added ? "Saved to favourites" : "Removed from favourites");
+  }
+
+  const categories = useMemo(
+    () => Array.from(new Set(restaurants.flatMap((r) => r.categories ?? []))).sort(),
+    [restaurants]
+  );
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return restaurants.filter((r) => {
+      const cats = r.categories ?? [];
+      if (category !== "all" && !cats.includes(category)) return false;
+      const items = (r as { menu?: { veg?: boolean }[] }).menu ?? [];
+      if (diet !== "all" && !items.some((m) => (diet === "veg" ? m.veg === true : m.veg === false))) return false;
+      if (!q) return true;
+      const haystack = [r.name, r.address ?? "", ...cats.map(labelFor)].join(" ").toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [restaurants, category, query, diet]);
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        padding: "32px 20px 60px",
-        fontFamily: "Arial, sans-serif",
-        background: "#fffaf5",
-        color: "#1f2937",
-      }}
-    >
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-        <header style={{ marginBottom: "32px" }}>
-          <p
-            style={{
-              color: "#ff6b00",
-              fontWeight: 800,
-              letterSpacing: "3px",
-              marginBottom: "24px",
-            }}
-          >
-            BITEVERSE
-          </p>
+    <>
+      <TopBar
+        onMenu={onMenu}
+        cartCount={cartCount}
+        onNotify={setToast}
+        onOpenCart={() => setCartOpen(true)}
+      />
 
-          <h1
-            style={{
-              fontSize: "clamp(32px, 5vw, 48px)",
-              margin: "0 0 12px",
-              lineHeight: 1.15,
-            }}
-          >
-            Delicious food, delivered fast.
-          </h1>
+      <div className={`shell ${collapsed ? "collapsed" : ""}`}>
+        <Sidebar open={navOpen} collapsed={collapsed} onClose={() => setNavOpen(false)} />
 
-          <p style={{ color: "#6b7280", lineHeight: 1.7 }}>
-            Discover your next favourite meal with BiteVerse.
-          </p>
-        </header>
-
-        <section
-          style={{
-            background: "#ffffff",
-            border: "1px solid #e5e7eb",
-            borderRadius: "16px",
-            padding: "20px",
-            marginBottom: "36px",
-          }}
-        >
-          <h2 style={{ marginTop: 0 }}>Backend connection</h2>
-
-          <p
-            role="status"
-            style={{
-              color: apiStatus === "Backend connected successfully"
-                ? "#15803d"
-                : "#b45309",
-              fontWeight: 700,
-            }}
-          >
-            {apiStatus === "Backend connected successfully" ? "✓ " : "• "}
-            {apiStatus}
-          </p>
-
-          <p style={{ color: "#6b7280", fontSize: "14px" }}>
-            API URL: {apiUrl || "Not configured"}
-          </p>
-        </section>
-
-        <section>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-              marginBottom: "20px",
-            }}
-          >
-            <div>
-              <h2 style={{ margin: "0 0 8px", fontSize: "28px" }}>
-                Restaurants near you
-              </h2>
-              <p style={{ margin: 0, color: "#6b7280" }}>
-                Discover restaurants available on BiteVerse.
-              </p>
+        <main className="main container">
+          <section id="top" className="hero">
+            <div className="hero-grid">
+              <div>
+                <p className="kicker">Good Food • Better Mood</p>
+                <h1>
+                  <span>Great food,</span>
+                  <span className="accent">delivered to you</span>
+                </h1>
+                <p className="lede">
+                  Craving{" "}
+                  <span key={wordIndex} className="swap">
+                    {WORDS[wordIndex]}
+                  </span>
+                  ? Discover your favourite restaurants, order delicious food, and enjoy fast and reliable
+                  delivery, all in one place.
+                </p>
+                <form
+                  className="hsearch"
+                  role="search"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    document.getElementById("restaurants")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  <label className="sr-only" htmlFor="restaurant-search">
+                    Search restaurants
+                  </label>
+                  <input
+                    id="restaurant-search"
+                    type="search"
+                    placeholder="Search for a restaurant or cuisine"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                </form>
+              </div>
+              <HeroScene />
             </div>
+          </section>
 
-            <input
-              type="search"
-              placeholder="Search restaurants..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              aria-label="Search restaurants"
-              style={{
-                padding: "13px 16px",
-                border: "1px solid #e5e7eb",
-                borderRadius: "12px",
-                width: "min(100%, 280px)",
-                fontSize: "15px",
-                outlineColor: "#ff6b00",
-              }}
-            />
-          </div>
+          <section id="restaurants" className="sec">
+            <h2>Restaurants near you</h2>
+            <p className="sub">Pick a cuisine to filter. Tap the heart to save a favourite.</p>
 
-          <p role="status" style={{ color: "#6b7280" }}>
-            {restaurantStatus}
-          </p>
-
-          {filteredRestaurants.length > 0 ? (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "22px",
-                marginTop: "20px",
-              }}
-            >
-              {filteredRestaurants.map((restaurant, index) => {
-                const name =
-                  restaurant.name || restaurant.title || "Restaurant";
-
-                const cuisine = Array.isArray(restaurant.cuisine)
-                  ? restaurant.cuisine.join(", ")
-                  : restaurant.cuisine ||
-                    restaurant.cuisines?.join(", ") ||
-                    "Cuisine details unavailable";
-
-                const image =
-                  restaurant.imageUrl ||
-                  restaurant.image ||
-                  restaurant.coverImage;
-
-                return (
-                  <article
-                    key={restaurant._id || restaurant.id || `${name}-${index}`}
-                    style={{
-                      background: "#ffffff",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "18px",
-                      overflow: "hidden",
-                      boxShadow: "0 5px 18px rgba(31, 41, 55, 0.05)",
-                    }}
+            <div className="diet" role="group" aria-label="Diet filter">
+                  {([["all", "All"], ["veg", "Veg"], ["nonveg", "Non-veg"]] as const).map(([v, label]) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={diet === v ? "diet-btn on" : "diet-btn"}
+                      aria-pressed={diet === v}
+                      onClick={() => setDiet(v)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {categories.length > 0 && (
+              <div className="cats" role="group" aria-label="Filter by cuisine">
+                {["all", ...categories].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="cat"
+                    aria-pressed={category === c}
+                    onClick={() => setCategory(c)}
                   >
-                    {image ? (
-                      <img
-                        src={image}
-                        alt={name}
-                        style={{
-                          width: "100%",
-                          height: "190px",
-                          objectFit: "cover",
-                          display: "block",
-                          background: "#f3f4f6",
-                        }}
-                      />
-                    ) : (
-                      <div
-                        aria-label={`${name} image placeholder`}
-                        style={{
-                          height: "150px",
-                          display: "grid",
-                          placeItems: "center",
-                          background: "#fff0e5",
-                          color: "#ff6b00",
-                          fontSize: "42px",
-                          fontWeight: 800,
-                        }}
-                      >
-                        {name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    {c === "all" ? "All" : labelFor(c)}
+                  </button>
+                ))}
+              </div>
+            )}
 
-                    <div style={{ padding: "20px" }}>
-                      <h3 style={{ fontSize: "21px", margin: "0 0 10px" }}>
-                        {name}
-                      </h3>
-
-                      <p style={{ color: "#6b7280", margin: "0 0 12px" }}>
-                        {cuisine}
-                      </p>
-
-                      {restaurant.description && (
-                        <p style={{ lineHeight: 1.6, color: "#4b5563" }}>
-                          {restaurant.description}
-                        </p>
-                      )}
-
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "12px",
-                          alignItems: "center",
-                          marginTop: "12px",
-                          fontSize: "14px",
-                        }}
-                      >
-                        {restaurant.rating !== undefined && (
-                          <span
-                            style={{
-                              background: "#f0fdf4",
-                              color: "#166534",
-                              padding: "6px 9px",
-                              borderRadius: "8px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            ★ {restaurant.rating}
-                          </span>
-                        )}
-
-                        {restaurant.deliveryTime && (
-                          <span style={{ color: "#6b7280" }}>
-                            {restaurant.deliveryTime}
-                          </span>
-                        )}
-
-                        {restaurant.isOpen !== undefined && (
-                          <span
-                            style={{
-                              color: restaurant.isOpen
-                                ? "#15803d"
-                                : "#b91c1c",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {restaurant.isOpen ? "Open" : "Closed"}
-                          </span>
-                        )}
-                      </div>
-
-                      {(restaurant.address || restaurant.location) && (
-                        <p
-                          style={{
-                            color: "#6b7280",
-                            fontSize: "14px",
-                            lineHeight: 1.5,
-                            marginBottom: 0,
-                          }}
-                        >
-                          {restaurant.address || restaurant.location}
-                        </p>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
-            restaurants.length > 0 &&
-            search.trim() !== "" && (
-              <p style={{ color: "#6b7280" }}>
-                No restaurants match &quot;{search}&quot;.
+            {loadStatus && (
+              <p role="status" className="status">
+                {loadStatus}
               </p>
-            )
-          )}
-        </section>
+            )}
+
+            {!loadStatus && visible.length === 0 && (
+              <div className="empty">No restaurants match your search. Try another cuisine or clear the search.</div>
+            )}
+
+            <div className="rgrid">
+              {visible.map((r, i) => (
+                <RestaurantCard
+                  key={r._id}
+                  restaurant={r}
+                  tint={TINTS[i % TINTS.length]}
+                  isFav={favourites.includes(r._id)}
+                  onToggleFav={() => toggleFavourite(r)}
+                  onOpenMenu={() => setMenuFor(r)}
+                />
+              ))}
+            </div>
+          </section>
+
+          <Offers onNotify={setToast} />
+          <LiveTracking />
+
+          <section id="how" className="sec">
+            <h2>How it works</h2>
+            <p className="sub">Three steps from hungry to happy.</p>
+            <div className="steps">
+              <div className="step">
+                <h3>Choose a restaurant</h3>
+                <p>Search by name or pick a cuisine, then fill your cart.</p>
+              </div>
+              <div className="step">
+                <h3>Pay and place</h3>
+                <p>Apply a coupon and pay by UPI, card or cash on delivery.</p>
+              </div>
+              <div className="step">
+                <h3>Track to your door</h3>
+                <p>Follow your rider live and get notified when they arrive.</p>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
-    </main>
+
+      <MenuSheet
+        restaurant={menuFor}
+        
+        
+        
+        onClose={() => setMenuFor(null)} onToast={setToast}
+      />
+
+      <CartPanel
+        open={cartOpen}
+        groups={groupByRestaurant(cart)}
+        deliveryFee={cartDeliveryFeeOf(cart)}
+        lines={cart?.lines ?? []}
+        subtotal={cartSubtotal}
+        onChange={changeQty}
+        onClear={() => {
+          saveCart(null);
+          setCartOpen(false);
+        }}
+        onClose={() => setCartOpen(false)}
+      />
+
+      <Toast message={toast} onDone={() => setToast(null)} />
+
+      <footer className="footer">
+        <div className="container">&copy; 2026 BiteVerse. All rights reserved.</div>
+      </footer>
+    </>
+  );
+}
+
+type CardProps = {
+  restaurant: Restaurant;
+  tint: string;
+  isFav: boolean;
+  onToggleFav: () => void;
+  onOpenMenu: () => void;
+};
+
+function RestaurantCard({ restaurant: r, tint, isFav, onToggleFav, onOpenMenu }: CardProps) {
+  const cuisines = (r.categories ?? []).map(labelFor).join(", ") || "Cuisine not set";
+  const time =
+    typeof r.deliveryMinutes?.min === "number" && typeof r.deliveryMinutes?.max === "number"
+      ? `${r.deliveryMinutes.min}-${r.deliveryMinutes.max} min`
+      : null;
+  const cost = r.costForTwo ? `\u20B9${r.costForTwo} for two` : null;
+
+  return (
+    <article className="rc">
+      <div className="art" style={{ background: tint }}>
+        <span className="initial">{r.name.charAt(0).toUpperCase()}</span>
+        <img
+          className="photo"
+          src={`/images/restaurants/${r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.jpg`}
+          alt={r.name}
+          loading="lazy"
+          onError={(e) => { const el = e.currentTarget; if (el.src.endsWith(".jpg")) el.src = el.src.replace(/\.jpg$/, ".svg"); else el.style.display = "none"; }}
+        />
+        <button
+          type="button"
+          className="fav"
+          aria-pressed={isFav}
+          aria-label={`Favourite ${r.name}`}
+          onClick={onToggleFav}
+        >
+          {isFav ? "\u2665" : "\u2661"}
+        </button>
+        {r.offerLabel && <span className="tag">{r.offerLabel}</span>}
+      </div>
+      <div className="body">
+        <h3>{r.name}</h3>
+        <span className="meta">{cuisines}</span>
+        <div className="stats">
+          {r.rating !== undefined && (
+            <span>
+              {"\u2605"} {Number(r.rating).toFixed(1)}
+            </span>
+          )}
+          {time && <span>{time}</span>}
+          {cost && <span>{cost}</span>}
+        </div>
+        {r.isOpen === false && <span className="closed">Closed now</span>}
+        {r.address && <span className="meta">{r.address}</span>}
+      </div>
+      <button type="button" className="add" onClick={onOpenMenu}>
+        Add to cart
+      </button>
+    </article>
   );
 }

@@ -1,0 +1,4 @@
+{"name":"Cafe Brew","address":"Piplod, Surat","categories":["cafe"],"deliveryMinutes":{"min":20,"max":30},"costForTwo":350,"rating":4.2,"offerLabel":"",
+"menu":[["Espresso",89],["Americano",109],["Cappuccino",129],["Cafe Latte",139],["Mocha",149],["Flat White",149],["Caramel Macchiato",159],["Hazelnut Latte",159],["Cold Coffee",119],["Iced Latte",139],
+["Frappe",159],["Filter Coffee",59],["Masala Chai",39],["Ginger Chai",49],["Green Tea",79],["Lemon Iced Tea",89],["Peach Iced Tea",99],["Hot Chocolate",139],["Chocolate Milkshake",139],["Oreo Shake",149],
+["Veg Club Sandwich",149],["Grilled Cheese Sandwich",119],["Chicken Sandwich",159],["Paneer Tikka Sandwich",139],["Egg Sandwich",99],["Croissant",99],["Cheese Croissant",129],["Blueberry Muffin",89],["Chocolate Muffin",89],["Banana Bread",99]]}

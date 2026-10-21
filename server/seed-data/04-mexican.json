@@ -1,0 +1,4 @@
+{"name":"Taco Fiesta","address":"City Light, Surat","categories":["mexican"],"deliveryMinutes":{"min":30,"max":40},"costForTwo":450,"rating":4.1,"offerLabel":"",
+"menu":[["Veg Tacos",149],["Paneer Tacos",169],["Chicken Tacos",189],["Crunchy Taco Supreme",179],["Bean Burrito",169],["Paneer Burrito",189],["Chicken Burrito",209],["Burrito Bowl Veg",199],["Burrito Bowl Chicken",229],["Veg Quesadilla",179],
+["Chicken Quesadilla",209],["Cheese Nachos",149],["Loaded Nachos",199],["Nachos with Salsa",129],["Guacamole and Chips",179],["Veg Enchiladas",219],["Chicken Enchiladas",249],["Veg Fajitas",229],["Chicken Fajitas",259],["Mexican Rice",119],
+["Refried Beans",99],["Churros",129],["Chocolate Churros",149],["Jalapeno Poppers",159],["Corn Salsa Salad",129],["Mexican Soup",119],["Taco Salad",169],["Mango Margarita Mocktail",119],["Virgin Mojito",99],["Lime Soda",69]]}

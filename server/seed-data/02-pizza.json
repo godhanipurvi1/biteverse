@@ -1,0 +1,4 @@
+{"name":"Pizza Piazza","address":"Adajan, Surat","categories":["pizza","italian"],"deliveryMinutes":{"min":30,"max":40},"costForTwo":550,"rating":4.3,"offerLabel":"",
+"menu":[["Margherita Pizza",199],["Farmhouse Pizza",289],["Veg Supreme Pizza",299],["Paneer Tikka Pizza",299],["Mexican Green Wave Pizza",279],["Corn and Cheese Pizza",249],["Mushroom Pizza",269],["Onion Capsicum Pizza",229],["Peri Peri Paneer Pizza",289],["Four Cheese Pizza",339],
+["Pepperoni Pizza",349],["BBQ Chicken Pizza",339],["Chicken Tikka Pizza",329],["Chicken Supreme Pizza",359],["Garlic Bread",99],["Cheese Garlic Bread",129],["Stuffed Garlic Bread",149],["Pasta Alfredo",229],["Pasta Arrabbiata",219],["Pasta Pesto",249],
+["Mac and Cheese",199],["Veg Lasagna",269],["Chicken Lasagna",299],["Bruschetta",149],["Caesar Salad",179],["Greek Salad",179],["Tiramisu",149],["Choco Lava Cake",99],["Coke",49],["Iced Tea",79]]}

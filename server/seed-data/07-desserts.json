@@ -1,0 +1,4 @@
+{"name":"Sweet Tooth","address":"City Light, Surat","categories":["desserts"],"deliveryMinutes":{"min":20,"max":30},"costForTwo":250,"rating":4.4,"offerLabel":"",
+"menu":[["Gulab Jamun",79],["Rasmalai",99],["Rasgulla",79],["Jalebi",79],["Kaju Katli",149],["Motichoor Ladoo",89],["Besan Ladoo",89],["Gajar Halwa",119],["Moong Dal Halwa",129],["Kulfi",79],
+["Malai Kulfi",99],["Falooda",129],["Ice Cream Sundae",149],["Vanilla Ice Cream",69],["Chocolate Ice Cream",79],["Butterscotch Ice Cream",79],["Brownie",99],["Brownie with Ice Cream",149],["Choco Lava Cake",99],["Chocolate Truffle Pastry",99],
+["Black Forest Pastry",89],["Red Velvet Pastry",119],["Cheesecake Slice",169],["Tiramisu Cup",149],["Glazed Donut",79],["Chocolate Donut",89],["Waffle with Chocolate",149],["Pancakes with Maple Syrup",139],["Fruit Salad with Ice Cream",129],["Mango Shake",119]]}

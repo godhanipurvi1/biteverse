@@ -1,0 +1,20 @@
+.page { padding: 28px 20px 48px; max-width: 1080px; margin: 0 auto; color: var(--ink, #161a22); }
+.title { margin: 0; font-family: var(--display, system-ui); font-weight: 800; font-size: 36px; letter-spacing: -0.03em; }
+.sub { margin: 6px 0 0; color: var(--muted, #5b6370); }
+.tabs { display: flex; gap: 10px; margin: 22px 0 20px; }
+.tab { height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line, #e5e7eb); background: var(--surface, #fff); color: var(--muted, #5b6370); font-weight: 600; cursor: pointer; }
+.tab:hover { border-color: var(--brand, #e8590c); }
+.tabOn { background: var(--brand, #e8590c); color: var(--brand-ink, #fff); border-color: var(--brand, #e8590c); }
+.grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); }
+.card { border-radius: 20px; border: 1px solid var(--line, #e5e7eb); background: var(--surface, #fff); overflow: hidden; display: flex; flex-direction: column; transition: transform .2s, box-shadow .2s; }
+.card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0, 0, 0, .1); }
+.art { display: block; height: 140px; background: var(--surface-2, #f5f5f5); }
+.art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.body { padding: 16px; display: grid; gap: 4px; flex: 1; }
+.name { margin: 0; font-size: 18px; font-weight: 700; }
+.meta { margin: 0; color: var(--muted, #5b6370); font-size: 14px; }
+.stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; font-size: 14px; font-weight: 600; }
+.remove { margin: 10px 16px 16px; height: 42px; border-radius: 12px; border: 1.5px solid var(--brand, #e8590c); background: transparent; color: var(--brand-text, #c2410c); font-weight: 700; cursor: pointer; }
+.remove:hover { background: var(--brand, #e8590c); color: var(--brand-ink, #fff); }
+.empty { padding: 40px 16px; text-align: center; color: var(--muted, #5b6370); border: 1px dashed var(--line, #e5e7eb); border-radius: 16px; }
+.empty a { color: var(--brand-text, #c2410c); font-weight: 700; }

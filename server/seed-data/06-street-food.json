@@ -1,0 +1,4 @@
+{"name":"Chaat Street","address":"Athwa, Surat","categories":["street-food"],"deliveryMinutes":{"min":15,"max":25},"costForTwo":150,"rating":4.3,"offerLabel":"",
+"menu":[["Pani Puri",59],["Sev Puri",69],["Bhel Puri",69],["Dahi Puri",79],["Papdi Chaat",79],["Aloo Tikki Chaat",79],["Samosa Chaat",79],["Raj Kachori",99],["Dahi Vada",79],["Vada Pav",39],
+["Dabeli",49],["Pav Bhaji",129],["Cheese Pav Bhaji",159],["Misal Pav",119],["Samosa",29],["Kachori",39],["Aloo Paratha",89],["Chole Bhature",129],["Chole Kulche",109],["Tawa Pulao",129],
+["Masala Maggi",79],["Cheese Maggi",99],["Grilled Sandwich",89],["Cheese Chilli Sandwich",109],["Frankie Veg",99],["Paneer Frankie",119],["Egg Frankie",109],["Corn Chaat",79],["Sugarcane Juice",49],["Masala Soda",49]]}
