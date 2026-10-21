@@ -1,0 +1,137 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1rem;
+  margin-top: 1rem;
+  align-items: start;
+}
+.toolbar {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+.search {
+  flex: 1;
+  min-width: 220px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  font: inherit;
+}
+.select {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  background: #fff;
+}
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.tab {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+.tabActive {
+  background: #e85d0c;
+  border-color: #e85d0c;
+  color: #fff;
+}
+.rowBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #e85d0c;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rowActive td {
+  background: #fff7f0;
+}
+.detail {
+  position: sticky;
+  top: 90px;
+}
+.detailHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+.section {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 0.8rem;
+  margin-top: 0.8rem;
+}
+.label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 0.2rem;
+}
+.value {
+  color: #111827;
+  margin: 0;
+}
+.itemRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  font-size: 0.92rem;
+  color: #374151;
+}
+.total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  color: #111827;
+  border-top: 1px solid #eef0f3;
+  margin-top: 0.5rem;
+  padding-top: 0.6rem;
+}
+.btn {
+  width: 100%;
+  background: #e85d0c;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.error {
+  color: #b91c1c;
+  font-size: 0.9rem;
+  margin: 0.6rem 0 0;
+}
+.pagerNote {
+  color: #6b7280;
+  font-size: 0.88rem;
+  margin-top: 0.7rem;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .detail {
+    position: static;
+  }
+}
