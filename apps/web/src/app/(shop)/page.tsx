@@ -1,71 +1,115 @@
 ﻿"use client";
 import Link from "next/link";
-import styles from "@/features/auth/auth.module.css";
+import Image from "next/image";
+import styles from "@/features/home/home.module.css";
 import { useSession } from "@/features/auth/use-session";
 
-const capitalize = (s: string) =>
-  s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+const StoreIcon = () => (
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+    <path d="M3 9l1.5-5h15L21 9" />
+    <path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" />
+    <path d="M5 12v8h14v-8" />
+    <path d="M10 20v-5h4v5" />
+  </svg>
+);
+
+const TagIcon = () => (
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+    <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" />
+    <circle cx="7.5" cy="7.5" r="1.5" />
+  </svg>
+);
+
+const PinIcon = () => (
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+    <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
+
+const features = [
+  {
+    title: "Restaurants",
+    text: "Explore top-rated restaurants near you and discover new favorites.",
+    href: "/restaurants",
+    cta: "Browse Restaurants",
+    icon: <StoreIcon />,
+  },
+  {
+    title: "Offers",
+    text: "Get the best deals, discounts and exclusive offers.",
+    href: "/offers",
+    cta: "View Offers",
+    icon: <TagIcon />,
+  },
+  {
+    title: "Live tracking",
+    text: "Track your order in real-time and know exactly when it arrives.",
+    href: "/order",
+    cta: "Track Order",
+    icon: <PinIcon />,
+  },
+];
 
 export default function HomePage() {
   const { user, loading } = useSession();
 
   return (
     <>
-      <section className="hero" style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
-        <div className="container">
-          <h1>Great food, delivered to you</h1>
-          <p style={{ margin: "0.75rem 0 1.75rem" }}>
-            {user
-              ? `Welcome, ${capitalize(user.name)}!`
-              : "Create an account to get started."}
+      <section className={styles.hero}>
+        <div>
+          <span className={styles.pill}>🍴 Good Food • Better Mood</span>
+          <h1 className={styles.title}>
+            Great food,
+            <br />
+            delivered to you
+          </h1>
+          <p className={styles.subtitle}>
+            Discover your favorite restaurants, order delicious food, and enjoy fast &amp; reliable
+            delivery, all in one place.
           </p>
-          <div className="hero__actions">
-            {!user && !loading && (
-              <>
-                <Link href="/signup" className={styles.button}>
-                  Create an account
-                </Link>
-                <Link href="/login" className={styles.buttonOutline}>
-                  Log in
-                </Link>
-              </>
-            )}
-            {user && (
-              <Link href="/restaurants" className={styles.button}>
-                Browse Restaurants
+
+          {user && (
+            <Link href="/restaurants" className={styles.cta}>
+              Browse Restaurants →
+            </Link>
+          )}
+          {!user && !loading && (
+            <>
+              <Link href="/signup" className={styles.cta}>
+                Create an account
               </Link>
-            )}
-          </div>
+              <Link href="/login" className={styles.ctaOutline}>
+                Log in
+              </Link>
+            </>
+          )}
         </div>
+
+        <Image
+          src="/images/hero-bowl.png"
+          alt="Fresh bowl of chicken, avocado and salad"
+          width={560}
+          height={440}
+          priority
+          className={styles.heroImage}
+        />
       </section>
 
-      <section className="container">
-        <div className="feature-grid">
-          <article className="feature">
-            <span className="tag">Live</span>
-            <h2>Restaurants</h2>
-            <p style={{ minHeight: "3em" }}>Browse menus from places near you.</p>
-            <Link href="/restaurants" style={{ marginTop: "1rem" }}>
-              Order now →
+      <section className={styles.features}>
+        {features.map((f) => (
+          <article key={f.title} className={styles.card}>
+            <span className={styles.tag}>Live</span>
+            <div className={styles.iconWrap}>{f.icon}</div>
+            <h2 className={styles.cardTitle}>{f.title}</h2>
+            <p className={styles.cardText}>{f.text}</p>
+            <Link href={f.href} className={styles.cardLink}>
+              {f.cta} →
             </Link>
           </article>
-          <article className="feature">
-            <span className="tag">Live</span>
-            <h2>Offers</h2>
-            <p style={{ minHeight: "3em" }}>Coupons and deals applied at checkout.</p>
-            <Link href="/offers" style={{ marginTop: "1rem" }}>
-              See offers →
-            </Link>
-          </article>
-          <article className="feature">
-            <span className="tag">Live</span>
-            <h2>Live tracking</h2>
-            <p style={{ minHeight: "3em" }}>Follow your order from kitchen to door.</p>
-            <Link href="/order" style={{ marginTop: "1rem" }}>
-              Track orders →
-            </Link>
-          </article>
-        </div>
+        ))}
       </section>
     </>
   );

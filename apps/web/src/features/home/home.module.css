@@ -1,0 +1,249 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #fff;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.headerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1f2937;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.logo span {
+  color: #e85d0c;
+}
+
+.nav {
+  display: flex;
+  gap: 1.75rem;
+  flex: 1;
+}
+.navLink {
+  color: #374151;
+  text-decoration: none;
+  font-weight: 500;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid transparent;
+}
+.navLink:hover,
+.navLinkActive {
+  color: #e85d0c;
+  border-bottom-color: #e85d0c;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.cart {
+  position: relative;
+  color: #1f2937;
+  display: flex;
+}
+.cartBadge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #e85d0c;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 999px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+.divider {
+  width: 1px;
+  height: 24px;
+  background: #e5e7eb;
+}
+.logout {
+  background: none;
+  border: none;
+  color: #e85d0c;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+}
+
+/* Hero */
+.hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+.pill {
+  display: inline-flex;
+  gap: 0.5rem;
+  background: #fff1e8;
+  color: #e85d0c;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+}
+.title {
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #111827;
+  margin: 0 0 1rem;
+}
+.subtitle {
+  color: #6b7280;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 0 2rem;
+}
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #e85d0c;
+  color: #fff;
+  padding: 0.95rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(232, 93, 12, 0.25);
+}
+.ctaOutline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #e85d0c;
+  border: 2px solid #e85d0c;
+  padding: 0.9rem 1.6rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 0.75rem;
+}
+.heroImage {
+  justify-self: center;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Feature cards */
+.features {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 4rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #f0f1f3;
+  border-radius: 20px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
+}
+.tag {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: #e85d0c;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+}
+.iconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fff1e8;
+  color: #e85d0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+.cardTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem;
+}
+.cardText {
+  color: #6b7280;
+  line-height: 1.55;
+  margin: 0 0 1.25rem;
+  min-height: 3em;
+}
+.cardLink {
+  color: #e85d0c;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 860px) {
+  .headerInner {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .features {
+    grid-template-columns: 1fr;
+  }
+  .ctaOutline {
+    margin-left: 0;
+    margin-top: 0.75rem;
+  }
+}
