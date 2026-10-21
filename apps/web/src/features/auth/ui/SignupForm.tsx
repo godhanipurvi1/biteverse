@@ -34,46 +34,57 @@ export function SignupForm() {
   }
 
   return (
-    <section className={styles.page}>
-      <h1>Create account</h1>
-      <form className={styles.card} onSubmit={onSubmit}>
-        <label className={styles.field}>
-          Full name
-          <input className={styles.input} name="name" minLength={2} maxLength={60} required autoComplete="name" />
-        </label>
-        <label className={styles.field}>
-          Email
-          <input className={styles.input} name="email" type="email" required autoComplete="email" />
-        </label>
-        <label className={styles.field}>
-          Mobile number (10 digits, starts with 6 to 9)
-          <input
-            className={styles.input}
-            name="phone"
-            inputMode="numeric"
-            pattern="[6-9][0-9]{9}"
-            required
-            autoComplete="tel-national"
-          />
-        </label>
-        <label className={styles.field}>
-          Password (8+ characters, include a number)
-          <input
-            className={styles.input}
-            name="password"
-            type="password"
-            minLength={8}
-            required
-            autoComplete="new-password"
-          />
-        </label>
-        {error && <p className={styles.error}>{error}</p>}
-        {notice && <p className={styles.success}>{notice}</p>}
-        <button className={styles.button} type="submit" disabled={busy}>
-          {busy ? "Creating..." : "Sign up"}
-        </button>
-      </form>
-      <p className={styles.muted}>
+    <section className={styles.page} style={{ maxWidth: 420, margin: "3rem auto" }}>
+      <div className={styles.card} style={{ padding: "2rem" }}>
+        <h1 style={{ marginBottom: "0.25rem" }}>Create account</h1>
+        <p className={styles.muted} style={{ marginBottom: "1.5rem" }}>
+          Order from your favourite restaurants in minutes.
+        </p>
+
+        <form onSubmit={onSubmit}>
+          <label className={styles.field}>
+            Full name
+            <input className={styles.input} name="name" minLength={2} maxLength={60} required autoComplete="name" />
+          </label>
+
+          <label className={styles.field} style={{ marginTop: "1rem" }}>
+            Email
+            <input className={styles.input} name="email" type="email" required autoComplete="email" placeholder="you@example.com" />
+          </label>
+
+          <label className={styles.field} style={{ marginTop: "1rem" }}>
+            Mobile number
+            <input
+              className={styles.input}
+              name="phone"
+              inputMode="numeric"
+              pattern="[6-9][0-9]{9}"
+              title="10 digits, starting with 6 to 9"
+              placeholder="9876543210"
+              required
+              autoComplete="tel-national"
+            />
+            <small className={styles.muted}>10 digits, starting with 6 to 9</small>
+          </label>
+
+          <label className={styles.field} style={{ marginTop: "1rem" }}>
+            Password
+            <input className={styles.input} name="password" type="password" minLength={8} required autoComplete="new-password" />
+            <small className={styles.muted}>At least 8 characters, including a number</small>
+          </label>
+
+          <div style={{ marginTop: "1.25rem" }}>
+            {error && <p className={styles.error}>{error}</p>}
+            {notice && <p className={styles.success}>{notice}</p>}
+          </div>
+
+          <button className={styles.button} type="submit" disabled={busy} style={{ width: "100%" }}>
+            {busy ? "Creating account..." : "Sign up"}
+          </button>
+        </form>
+      </div>
+
+      <p className={styles.muted} style={{ textAlign: "center", marginTop: "1.25rem" }}>
         Already have an account? <Link href="/login">Log in</Link>
       </p>
     </section>

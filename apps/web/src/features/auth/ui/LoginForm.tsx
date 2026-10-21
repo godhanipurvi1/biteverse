@@ -27,31 +27,51 @@ export function LoginForm() {
   }
 
   return (
-    <section className={styles.page}>
-      <h1>Log in</h1>
-      <form className={styles.card} onSubmit={onSubmit}>
-        <label className={styles.field}>
-          Email
-          <input className={styles.input} name="email" type="email" autoComplete="email" required />
-        </label>
-        <label className={styles.field}>
-          Password
-          <input
-            className={styles.input}
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-          />
-        </label>
-        {error && <p className={styles.error}>{error}</p>}
-        <button className={styles.button} type="submit" disabled={busy}>
-          {busy ? "Logging in..." : "Log in"}
-        </button>
-      </form>
-      <p className={styles.muted}>
-        New here? <Link href="/signup">Create an account</Link> ·{" "}
-        <Link href="/forgot-password">Forgot password?</Link>
+    <section className={styles.page} style={{ maxWidth: 420, margin: "3rem auto" }}>
+      <div className={styles.card} style={{ padding: "2rem" }}>
+        <h1 style={{ marginBottom: "0.25rem" }}>Welcome back</h1>
+        <p className={styles.muted} style={{ marginBottom: "1.5rem" }}>
+          Log in to order, track, and manage your account.
+        </p>
+
+        <form onSubmit={onSubmit}>
+          <label className={styles.field}>
+            Email
+            <input
+              className={styles.input}
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+
+          <label className={styles.field} style={{ marginTop: "1rem" }}>
+            Password
+            <input
+              className={styles.input}
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+            />
+          </label>
+
+          <p style={{ textAlign: "right", margin: "0.5rem 0 1rem", fontSize: "0.9rem" }}>
+            <Link href="/forgot-password">Forgot password?</Link>
+          </p>
+
+          {error && <p className={styles.error}>{error}</p>}
+
+          <button className={styles.button} type="submit" disabled={busy} style={{ width: "100%" }}>
+            {busy ? "Logging in..." : "Log in"}
+          </button>
+        </form>
+      </div>
+
+      <p className={styles.muted} style={{ textAlign: "center", marginTop: "1.25rem" }}>
+        New to BiteVerse? <Link href="/signup">Create an account</Link>
       </p>
     </section>
   );
