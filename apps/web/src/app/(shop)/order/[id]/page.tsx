@@ -1,17 +1,18 @@
 ﻿"use client";
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { getOrder, createOrder } from "@/features/orders/orders.api";
 import { useRouter } from "next/navigation";
 import styles from "@/features/auth/auth.module.css";
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getOrder(params.id).then(setOrder).finally(() => setLoading(false));
-  }, [params.id]);
+    getOrder(id).then(setOrder).catch(console.error).finally(() => setLoading(false));
+  }, [id]);
 
   const handleReorder = async () => {
     const newOrder = await createOrder(order.restaurantSlug, order.mode, order.address);

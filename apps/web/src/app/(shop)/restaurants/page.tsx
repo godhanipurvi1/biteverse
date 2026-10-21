@@ -1,12 +1,27 @@
-﻿import Link from "next/link";
+﻿"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import styles from "@/features/auth/auth.module.css";
 import { getRestaurants } from "@/features/restaurant/restaurant.api";
 import { RestaurantCard } from "@/features/restaurant/RestaurantCard";
 
-export const metadata = { title: "Restaurants" };
+export default function RestaurantsPage() {
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-export default async function RestaurantsPage() {
-  const restaurants = await getRestaurants();
+  useEffect(() => {
+    getRestaurants()
+      .then(setRestaurants)
+      .catch((err) => {
+        console.error("Error fetching restaurants:", err);
+        setError("Failed to load restaurants");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <section className={styles.page}>Loading restaurants...</section>;
+  if (error) return <section className={styles.page}>{error}</section>;
 
   return (
     <section className={styles.pageWide}>
