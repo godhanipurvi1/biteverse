@@ -1,0 +1,250 @@
+.welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #111827;
+  margin: 0;
+}
+.subtitle {
+  color: #6b7280;
+  margin: 0.3rem 0 0;
+}
+.dateChip {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.stat {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+.statIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #fff1e8;
+  color: #e85d0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.statLabel {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0;
+}
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0.1rem 0 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.card {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.cardTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+.link {
+  color: #e85d0c;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.muted {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Bar chart */
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  height: 200px;
+  padding-top: 0.5rem;
+}
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 0.4rem;
+}
+.bar {
+  width: 100%;
+  max-width: 44px;
+  background: linear-gradient(180deg, #f59e4b, #e85d0c);
+  border-radius: 8px 8px 4px 4px;
+  min-height: 4px;
+}
+.barLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+.barValue {
+  font-size: 0.72rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* Donut legend */
+.donut {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.legend {
+  flex: 1;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  color: #374151;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legendCount {
+  margin-left: auto;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.table th {
+  text-align: left;
+  color: #6b7280;
+  font-weight: 600;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid #eef0f3;
+}
+.table td {
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+.orderId {
+  font-weight: 700;
+  color: #111827;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.ok { background: #dcfce7; color: #15803d; }
+.warn { background: #fef3c7; color: #b45309; }
+.info { background: #dbeafe; color: #1d4ed8; }
+.bad { background: #fee2e2; color: #b91c1c; }
+
+/* Offers */
+.offer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.offer:last-child {
+  border-bottom: none;
+}
+.code {
+  border: 1.5px dashed #e85d0c;
+  color: #e85d0c;
+  border-radius: 8px;
+  padding: 0.2rem 0.55rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+.state {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+@media (max-width: 1100px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
