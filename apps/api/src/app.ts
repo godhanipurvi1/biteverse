@@ -7,6 +7,7 @@ import { authRouter } from "./modules/auth/auth.routes.js";
 import { restaurantRouter } from "./modules/restaurants/restaurant.routes.js";
 import cartRouter from "./modules/cart/cart.routes.js";
 import orderRouter from "./modules/orders/order.routes.js";
+import { adminOrderRouter } from "./modules/orders/admin.routes.js";
 
 export const app = express();
 
@@ -26,4 +27,5 @@ app.use("/api/auth", authRouter);
 app.use("/api/restaurants", restaurantRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
+app.use("/api/admin", adminOrderRouter);
 app.use(errorHandler);
