@@ -1,5 +1,4 @@
 ﻿"use client";
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "@/features/auth/auth.module.css";
 import { useSession } from "@/features/auth/use-session";
@@ -44,14 +43,20 @@ export default function HomePage() {
             </Link>
           </article>
           <article className="feature">
-            <span className="tag">Coming soon</span>
+            <span className="tag">Live</span>
             <h2>Offers</h2>
             <p>Coupons and deals applied at checkout.</p>
+            <Link href="/offers" style={{ marginTop: "1rem" }}>
+              See offers →
+            </Link>
           </article>
           <article className="feature">
-            <span className="tag">Coming soon</span>
+            <span className="tag">Live</span>
             <h2>Live tracking</h2>
             <p>Follow your order from kitchen to door.</p>
+            <Link href="/order" style={{ marginTop: "1rem" }}>
+              Track orders →
+            </Link>
           </article>
         </div>
       </section>
