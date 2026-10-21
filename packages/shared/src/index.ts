@@ -20,3 +20,6 @@ export * from "./orders/order-status.js";
 
 // Auth
 export * from "./schemas/auth.js";
+
+// Restaurants
+export * from "./schemas/restaurant.js";

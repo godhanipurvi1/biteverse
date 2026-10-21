@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
+import { restaurantRouter } from "./modules/restaurants/restaurant.routes.js";
 
 export const app = express();
 
@@ -17,4 +18,5 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/restaurants", restaurantRouter);
 app.use(errorHandler);
