@@ -10,6 +10,7 @@ const userSchema = new Schema(
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ROLES, default: "customer" },
     emailVerified: { type: Boolean, default: false },
+    sessionVersion: { type: Number, default: 0 },
     emailVerifyTokenHash: { type: String, select: false },
     emailVerifyExpires: { type: Date, select: false },
     resetTokenHash: { type: String, select: false },

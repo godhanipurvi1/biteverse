@@ -1,12 +1,22 @@
-﻿import bcrypt from "bcryptjs";
-import type { LoginInput, ResetPasswordInput, SignupInput, VerifyEmailInput } from "@biteverse/shared";
+﻿import { createHash, randomBytes } from "node:crypto";
+import bcrypt from "bcryptjs";
+import type {
+  LoginInput,
+  ResetPasswordInput,
+  SignupInput,
+  VerifyEmailInput,
+} from "@biteverse/shared";
 import { HttpError } from "../../lib/errors.js";
+import { sendMail } from "../../lib/mailer.js";
 import { hashToken, randomToken } from "../../lib/tokens.js";
 import { User } from "../users/user.model.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 const appUrl = () => process.env.CLIENT_ORIGIN ?? "http://localhost:3000";
+
+// Used when the email is unknown, so login takes the same time either way.
+const DUMMY_HASH = bcrypt.hashSync(randomBytes(16).toString("hex"), 12);
 
 export function toPublicUser(user: {
   _id: unknown;
@@ -26,28 +36,45 @@ export function toPublicUser(user: {
   };
 }
 
+async function issueVerification(user: { _id: unknown; email: string }) {
+  const token = randomToken();
+  await User.updateOne(
+    { _id: user._id },
+    { $set: { emailVerifyTokenHash: hashToken(token), emailVerifyExpires: new Date(Date.now() + DAY_MS) } },
+  );
+  await sendMail({
+    to: user.email,
+    subject: "Verify your BiteVerse email",
+    text: `Verify your email: ${appUrl()}/verify-email?token=${token}\nThis link expires in 24 hours.`,
+  });
+}
+
 export async function signup(input: SignupInput) {
   const taken = await User.exists({ $or: [{ email: input.email }, { phone: input.phone }] });
   if (taken) throw new HttpError(409, "Email or phone is already registered");
 
-  const verifyToken = randomToken();
   const user = await User.create({
     name: input.name,
     email: input.email,
     phone: input.phone,
     passwordHash: await bcrypt.hash(input.password, 12),
-    emailVerifyTokenHash: hashToken(verifyToken),
-    emailVerifyExpires: new Date(Date.now() + DAY_MS),
   });
-
-  // No email provider yet, so the link is printed to the API console.
-  console.log(`[dev] Verify ${user.email}: ${appUrl()}/verify-email?token=${verifyToken}`);
+  await issueVerification(user);
   return user;
+}
+
+export async function resendVerification(email: string) {
+  const user = await User.findOne({ email: email.toLowerCase() }).select("emailVerified");
+  if (user && !user.emailVerified) {
+    await issueVerification(user);
+  }
+  // Same response either way, so this can't reveal which emails are registered.
 }
 
 export async function login(input: LoginInput) {
   const user = await User.findOne({ email: input.email }).select("+passwordHash");
-  const valid = user ? await bcrypt.compare(input.password, user.passwordHash) : false;
+  const hash = user?.passwordHash ?? DUMMY_HASH;
+  const valid = await bcrypt.compare(input.password, hash);
   if (!user || !valid) throw new HttpError(401, "Email or password is incorrect");
   return user;
 }
@@ -63,10 +90,17 @@ export async function verifyEmail(input: VerifyEmailInput) {
 export async function forgotPassword(email: string) {
   const token = randomToken();
   const user = await User.findOneAndUpdate(
-    { email },
+    { email: email.toLowerCase() },
     { $set: { resetTokenHash: hashToken(token), resetExpires: new Date(Date.now() + HOUR_MS) } },
   );
-  if (user) console.log(`[dev] Reset for ${email}: ${appUrl()}/reset-password?token=${token}`);
+  if (user) {
+    await sendMail({
+      to: user.email,
+      subject: "Reset your BiteVerse password",
+      text: `Reset your password: ${appUrl()}/reset-password?token=${token}\nThis link expires in 1 hour.`,
+    });
+  }
+  // Same response either way, so this can't reveal which emails are registered.
 }
 
 export async function resetPassword(input: ResetPasswordInput) {
@@ -75,6 +109,8 @@ export async function resetPassword(input: ResetPasswordInput) {
     {
       $set: { passwordHash: await bcrypt.hash(input.password, 12) },
       $unset: { resetTokenHash: 1, resetExpires: 1 },
+      // Bumping the version invalidates every session issued before the reset.
+      $inc: { sessionVersion: 1 },
     },
   );
   if (!user) throw new HttpError(400, "This reset link is invalid or has expired");

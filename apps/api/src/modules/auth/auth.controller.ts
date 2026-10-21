@@ -15,13 +15,17 @@ export async function signupHandler(req: Request, res: Response) {
   const user = await service.signup(signupSchema.parse(req.body));
   res.status(201).json({
     user: service.toPublicUser(user),
-    message: "Account created. Verify your email to continue.",
+    message: "Account created. Check your email to verify your address.",
   });
 }
 
 export async function loginHandler(req: Request, res: Response) {
   const user = await service.login(loginSchema.parse(req.body));
-  res.cookie(sessionCookie.name(), signSession(String(user._id)), sessionCookie.options());
+  res.cookie(
+    sessionCookie.name(),
+    signSession(String(user._id), user.sessionVersion),
+    sessionCookie.options(),
+  );
   res.json({ user: service.toPublicUser(user) });
 }
 
@@ -41,6 +45,12 @@ export async function verifyEmailHandler(req: Request, res: Response) {
   res.json({ message: "Email verified" });
 }
 
+export async function resendVerificationHandler(req: Request, res: Response) {
+  const { email } = forgotPasswordSchema.parse(req.body);
+  await service.resendVerification(email);
+  res.json({ message: "If that account exists and is unverified, a new link is on its way" });
+}
+
 export async function forgotPasswordHandler(req: Request, res: Response) {
   await service.forgotPassword(forgotPasswordSchema.parse(req.body).email);
   res.json({ message: "If that email is registered, a reset link is on its way" });
@@ -48,5 +58,5 @@ export async function forgotPasswordHandler(req: Request, res: Response) {
 
 export async function resetPasswordHandler(req: Request, res: Response) {
   await service.resetPassword(resetPasswordSchema.parse(req.body));
-  res.json({ message: "Password updated. You can log in now." });
+  res.json({ message: "Password updated. Log in with your new password." });
 }

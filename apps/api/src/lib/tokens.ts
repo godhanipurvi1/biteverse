@@ -19,18 +19,18 @@ function sessionDays(): number {
   return Number(process.env.COOKIE_MAX_AGE_DAYS ?? 7);
 }
 
-export function signSession(userId: string): string {
-  return jwt.sign({ sub: userId }, jwtSecret(), {
+export function signSession(userId: string, sessionVersion: number): string {
+  return jwt.sign({ sub: userId, v: sessionVersion }, jwtSecret(), {
     expiresIn: sessionDays() * 24 * 60 * 60,
   });
 }
 
-export function verifySession(token: string): string {
+export function verifySession(token: string): { sub: string; v: number } {
   const payload = jwt.verify(token, jwtSecret());
-  if (typeof payload === "string" || typeof payload.sub !== "string") {
+  if (typeof payload === "string" || typeof payload.sub !== "string" || typeof payload.v !== "number") {
     throw new Error("Invalid session token");
   }
-  return payload.sub;
+  return { sub: payload.sub, v: payload.v };
 }
 
 export const sessionCookie = {

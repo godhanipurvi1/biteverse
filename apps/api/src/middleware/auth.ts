@@ -11,14 +11,17 @@ declare global {
   }
 }
 
-// Loads the user on every request, so a role change takes effect immediately.
+// Loads the user on every request, so role changes and password resets take effect at once.
 export async function requireAuth(req: Request, _res: Response, next: NextFunction) {
   try {
     const token = req.cookies?.[sessionCookie.name()];
     if (!token) throw new HttpError(401, "Please log in to continue");
 
-    const user = await User.findById(verifySession(token)).select("role");
-    if (!user) throw new HttpError(401, "Please log in to continue");
+    const { sub, v } = verifySession(token);
+    const user = await User.findById(sub).select("role sessionVersion");
+    if (!user || user.sessionVersion !== v) {
+      throw new HttpError(401, "Please log in to continue");
+    }
 
     req.user = { id: String(user._id), role: user.role as UserRole };
     next();

@@ -23,3 +23,6 @@ export * from "./schemas/auth.js";
 
 // Restaurants
 export * from "./schemas/restaurant.js";
+
+// Cart
+export * from "./schemas/cart.js";
