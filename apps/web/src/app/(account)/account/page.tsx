@@ -1,6 +1,8 @@
-﻿import { getServerUser } from "@/features/auth/server-session";
+﻿import Link from "next/link";
+import { getServerUser } from "@/features/auth/server-session";
 import styles from "@/features/auth/auth.module.css";
 import { LogoutButton } from "@/features/auth/ui/LogoutButton";
+import { OrdersPanel } from "@/features/account/components/OrdersPanel";
 
 export default async function AccountPage() {
   const user = await getServerUser();
@@ -12,6 +14,15 @@ export default async function AccountPage() {
         <h1>Hi, {user.name}</h1>
         <LogoutButton className={styles.buttonOutline} />
       </div>
+
+      {!user.emailVerified && (
+        <div className={styles.card} style={{ marginBottom: "1.5rem" }}>
+          <p>
+            Your email isn&apos;t verified yet.{" "}
+            <Link href="/verify-email">Verify it now</Link>.
+          </p>
+        </div>
+      )}
 
       <div className={styles.grid}>
         <div className={styles.card}>
@@ -35,7 +46,7 @@ export default async function AccountPage() {
 
         <div className={styles.card}>
           <h2>Orders</h2>
-          <p className={styles.muted}>Your orders will appear here.</p>
+          <OrdersPanel />
         </div>
       </div>
     </section>
