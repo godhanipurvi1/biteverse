@@ -1,4 +1,5 @@
-﻿import cookieParser from "cookie-parser";
+﻿import cors from "cors";
+import cookieParser from "cookie-parser";
 import express from "express";
 import helmet from "helmet";
 import mongoose from "mongoose";
@@ -15,6 +16,7 @@ export const app = express();
 
 app.disable("x-powered-by");
 app.use(helmet());
+app.use(cors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:3000", credentials: true }));
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
 
@@ -34,3 +36,4 @@ app.use("/api/admin", adminOfferRouter);
 app.use("/api/admin", adminMenuRouter);
 app.use("/api/offers", offerRouter);
 app.use(errorHandler);
+
