@@ -14,9 +14,9 @@ const samples = [
     rating: 4.5,
     deliveryMinutes: 30,
     menu: [
-      { name: "Paneer Tikka", description: "Smoky grilled cottage cheese", priceInr: 260, veg: true },
-      { name: "Chicken Biryani", description: "Long-grain rice, slow dum", priceInr: 320, veg: false },
-      { name: "Garlic Naan", description: "Clay oven bread", priceInr: 60, veg: true },
+      { name: "Paneer Tikka", description: "Smoky grilled cottage cheese", priceInr: 26000, veg: true },
+      { name: "Chicken Biryani", description: "Long-grain rice, slow dum", priceInr: 32000, veg: false },
+      { name: "Garlic Naan", description: "Clay oven bread", priceInr: 6000, veg: true },
     ],
   },
   {
@@ -27,8 +27,8 @@ const samples = [
     rating: 4.2,
     deliveryMinutes: 20,
     menu: [
-      { name: "Masala Dosa", description: "Crisp dosa with potato filling", priceInr: 120, veg: true },
-      { name: "Idli Sambar", description: "Steamed rice cakes, lentil stew", priceInr: 90, veg: true },
+      { name: "Masala Dosa", description: "Crisp dosa with potato filling", priceInr: 12000, veg: true },
+      { name: "Idli Sambar", description: "Steamed rice cakes, lentil stew", priceInr: 9000, veg: true },
     ],
   },
   {
@@ -39,8 +39,8 @@ const samples = [
     rating: 4.0,
     deliveryMinutes: 25,
     menu: [
-      { name: "Classic Cheeseburger", description: "Beef patty, cheddar, pickles", priceInr: 210, veg: false },
-      { name: "Veggie Burger", description: "Crisp potato and pea patty", priceInr: 170, veg: true },
+      { name: "Classic Cheeseburger", description: "Beef patty, cheddar, pickles", priceInr: 21000, veg: false },
+      { name: "Veggie Burger", description: "Crisp potato and pea patty", priceInr: 17000, veg: true },
     ],
   },
 ];

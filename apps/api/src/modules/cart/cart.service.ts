@@ -2,6 +2,7 @@
 import { computeTotals } from "@biteverse/shared";
 import type { Paise } from "@biteverse/shared";
 import { HttpError } from "../../lib/errors.js";
+import { Restaurant } from "../restaurants/restaurant.model.js";
 import { activeOfferByCode, findUsableOffer, toRule } from "../offers/offer.service.js";
 
 export type CartMode = "delivery" | "pickup";
@@ -38,8 +39,14 @@ export async function addToCart(
   restaurantSlug: string,
   menuItemName: string,
   quantity: number,
-  priceInr: number,
+  _clientPriceInr: number,
 ) {
+  // The price always comes from the menu, never from the browser.
+  const restaurant = await Restaurant.findOne({ slug: restaurantSlug }).lean();
+  const menuItem = (restaurant?.menu as any[] | undefined)?.find((m) => m.name === menuItemName);
+  if (!menuItem || menuItem.available === false) throw new HttpError(400, "That item is not available");
+  const priceInr: number = menuItem.priceInr;
+
   let cart = await Cart.findOne({ userId });
 
   if (!cart) {
