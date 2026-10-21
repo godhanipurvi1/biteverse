@@ -69,6 +69,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
       <div className={styles.card}>
         <p>Subtotal: ₹{(order.subtotalInr / 100).toFixed(2)}</p>
+        {order.discountInr > 0 && <p>Discount{order.couponCode ? ` (${order.couponCode})` : ""}: −₹{(order.discountInr / 100).toFixed(2)}</p>}
         <p>GST: ₹{(order.gstInr / 100).toFixed(2)}</p>
         {order.mode === "delivery" && (
           <>

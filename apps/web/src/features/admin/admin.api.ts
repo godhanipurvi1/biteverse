@@ -36,3 +36,23 @@ export const getAdminOrders = (status?: string) =>
 
 export const setOrderStatus = (id: string, status: string) =>
   api<{ order: AdminOrder }>(`/admin/orders/${id}/status`, { method: "PATCH", body: { status } });
+
+export type AdminOffer = {
+  _id: string;
+  code: string;
+  title: string;
+  description?: string;
+  type: "percent" | "fixed";
+  value: number;
+  minSubtotalInr: number;
+  maxDiscountInr?: number;
+  active: boolean;
+};
+
+export const getAdminOffers = () => api<{ offers: AdminOffer[] }>("/admin/offers");
+
+export const createOffer = (body: Record<string, unknown>) =>
+  api<{ offer: AdminOffer }>("/admin/offers", { body });
+
+export const setOfferActive = (id: string, active: boolean) =>
+  api<{ offer: AdminOffer }>(`/admin/offers/${id}`, { method: "PATCH", body: { active } });

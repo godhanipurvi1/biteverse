@@ -4,7 +4,7 @@ import styles from "@/features/auth/auth.module.css";
 import { LogoutButton } from "@/features/auth/ui/LogoutButton";
 import { AdminStatsCards } from "@/features/admin/AdminStats";
 
-const comingSoon = ["Menu", "Riders", "Offers", "Reviews", "Reports"];
+const comingSoon = ["Menu", "Riders", "Reviews", "Reports"];
 
 export default async function AdminPage() {
   const user = await getServerUser();
@@ -27,6 +27,11 @@ export default async function AdminPage() {
           <span className={`${styles.badge} ${styles.badgeOk}`}>Live</span>
           <h2>Orders</h2>
           <p className={styles.muted}>View and update every order</p>
+        </Link>
+        <Link href="/admin/offers" className={styles.card}>
+          <span className={`${styles.badge} ${styles.badgeOk}`}>Live</span>
+          <h2>Offers</h2>
+          <p className={styles.muted}>Create and manage coupons</p>
         </Link>
         {comingSoon.map((name) => (
           <div className={styles.card} key={name}>

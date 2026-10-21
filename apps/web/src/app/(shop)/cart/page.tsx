@@ -1,42 +1,93 @@
 ﻿"use client";
-import { useState, useEffect } from "react";
-import { getCart, removeFromCart, updateCartItem, createOrder } from "@/features/orders/orders.api";
+import { useCallback, useEffect, useState } from "react";
+import {
+  getCart,
+  removeFromCart,
+  updateCartItem,
+  createOrder,
+  applyCoupon,
+  removeCoupon,
+} from "@/features/orders/orders.api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "@/features/auth/auth.module.css";
 
+type Mode = "delivery" | "pickup";
+const inr = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
+const message = (e: unknown, fallback: string) => (e instanceof Error ? e.message : fallback);
+
 export default function CartPage() {
   const router = useRouter();
   const [cart, setCart] = useState<any>(null);
-  const [mode, setMode] = useState<"delivery" | "pickup">("delivery");
+  const [mode, setMode] = useState<Mode>("delivery");
   const [address, setAddress] = useState("");
+  const [code, setCode] = useState("");
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    getCart().then(setCart).catch(() => setCart(null)).finally(() => setLoading(false));
+  const load = useCallback(async (m: Mode) => {
+    try {
+      setCart(await getCart(m));
+    } catch {
+      setCart(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    load(mode);
+  }, [mode, load]);
+
   const handleRemove = async (name: string) => {
-    const updated = await removeFromCart(name);
-    setCart(updated);
+    await removeFromCart(name);
+    await load(mode);
   };
 
   const handleQuantity = async (name: string, qty: number) => {
-    if (qty <= 0) {
-      await handleRemove(name);
-      return;
+    if (qty <= 0) return handleRemove(name);
+    await updateCartItem(name, qty);
+    await load(mode);
+  };
+
+  const onApply = async () => {
+    setBusy(true);
+    setCouponError(null);
+    try {
+      setCart(await applyCoupon(code, mode));
+      setCode("");
+    } catch (e) {
+      setCouponError(message(e, "Could not apply the coupon"));
+    } finally {
+      setBusy(false);
     }
-    const updated = await updateCartItem(name, qty);
-    setCart(updated);
+  };
+
+  const onRemoveCoupon = async () => {
+    setCouponError(null);
+    try {
+      setCart(await removeCoupon(mode));
+    } catch (e) {
+      setCouponError(message(e, "Could not remove the coupon"));
+    }
   };
 
   const handleCheckout = async () => {
     if (mode === "delivery" && !address) {
-      alert("Please enter delivery address");
+      setError("Please enter a delivery address");
       return;
     }
-    const order = await createOrder(cart.restaurantSlug, mode, address);
-    router.push(`/order/${order._id}`);
+    setBusy(true);
+    setError(null);
+    try {
+      const order = await createOrder(cart.restaurantSlug, mode, address);
+      router.push(`/order/${order._id}`);
+    } catch (e) {
+      setError(message(e, "Could not place the order"));
+      setBusy(false);
+    }
   };
 
   if (loading) return <div className={styles.page}>Loading...</div>;
@@ -58,7 +109,7 @@ export default function CartPage() {
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <div>
                 <h3>{item.menuItemName}</h3>
-                <p>₹{item.priceInr / 100}</p>
+                <p>{inr(item.priceInr)}</p>
               </div>
               <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                 <button onClick={() => handleQuantity(item.menuItemName, item.quantity - 1)}>−</button>
@@ -72,27 +123,54 @@ export default function CartPage() {
       </div>
 
       <div className={styles.card} style={{ marginTop: "2rem" }}>
+        <h2>Coupon</h2>
+        {cart.couponCode ? (
+          <p className={styles.success}>
+            {cart.couponCode} applied. <button className={styles.linkButton} onClick={onRemoveCoupon}>Remove</button>
+          </p>
+        ) : (
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <input
+              className={styles.input}
+              placeholder="Enter coupon code"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+            />
+            <button className={styles.buttonSmall} onClick={onApply} disabled={busy || !code.trim()}>
+              Apply
+            </button>
+          </div>
+        )}
+        {couponError && <p className={styles.error}>{couponError}</p>}
+        {cart.couponNote && <p className={styles.muted}>{cart.couponNote}</p>}
+        <p className={styles.muted}>
+          <Link href="/offers">See all offers</Link>
+        </p>
+      </div>
+
+      <div className={styles.card} style={{ marginTop: "2rem" }}>
         <h2>Totals</h2>
-        <p>Subtotal: ₹{(cart.subtotalInr / 100).toFixed(2)}</p>
-        <p>GST (5%): ₹{(cart.gstInr / 100).toFixed(2)}</p>
+        <p>Subtotal: {inr(cart.subtotalInr)}</p>
+        {cart.discountInr > 0 && <p className={styles.success}>Discount ({cart.couponCode}): −{inr(cart.discountInr)}</p>}
+        <p>GST (5%): {inr(cart.gstInr)}</p>
         {mode === "delivery" && (
           <>
-            <p>Delivery: ₹{(cart.deliveryFeeInr / 100).toFixed(2)}</p>
-            <p>Packaging: ₹{(cart.packagingInr / 100).toFixed(2)}</p>
+            <p>Delivery: {inr(cart.deliveryFeeInr)}</p>
+            <p>Packaging: {inr(cart.packagingInr)}</p>
           </>
         )}
-        <p style={{ fontSize: "1.2rem", fontWeight: "bold", marginTop: "1rem" }}>Total: ₹{(cart.totalInr / 100).toFixed(2)}</p>
+        <p style={{ fontSize: "1.2rem", fontWeight: "bold", marginTop: "1rem" }}>Total: {inr(cart.totalInr)}</p>
       </div>
 
       <div className={styles.card} style={{ marginTop: "2rem" }}>
         <h2>Delivery or Pickup</h2>
         <div style={{ marginBottom: "1rem" }}>
           <label style={{ display: "block", marginBottom: "0.5rem" }}>
-            <input type="radio" value="delivery" checked={mode === "delivery"} onChange={(e) => setMode(e.target.value as any)} />
+            <input type="radio" value="delivery" checked={mode === "delivery"} onChange={() => setMode("delivery")} />
             {" "}Delivery
           </label>
           <label style={{ display: "block" }}>
-            <input type="radio" value="pickup" checked={mode === "pickup"} onChange={(e) => setMode(e.target.value as any)} />
+            <input type="radio" value="pickup" checked={mode === "pickup"} onChange={() => setMode("pickup")} />
             {" "}Pickup
           </label>
         </div>
@@ -108,8 +186,9 @@ export default function CartPage() {
           />
         )}
 
-        <button onClick={handleCheckout} className={styles.button} style={{ width: "100%" }}>
-          Place Order
+        {error && <p className={styles.error}>{error}</p>}
+        <button onClick={handleCheckout} className={styles.button} style={{ width: "100%" }} disabled={busy}>
+          {busy ? "Please wait..." : "Place Order"}
         </button>
       </div>
     </div>
