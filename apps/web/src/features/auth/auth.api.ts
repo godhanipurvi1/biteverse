@@ -41,3 +41,7 @@ export function forgotPassword(email: string) {
 export function resetPassword(input: { token: string; password: string }) {
   return api<Message>("/auth/reset-password", { body: input });
 }
+
+export function resendVerification(email: string) {
+  return api<Message>("/auth/resend-verification", { body: { email } });
+}

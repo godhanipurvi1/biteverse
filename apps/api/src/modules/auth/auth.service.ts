@@ -63,9 +63,15 @@ export async function signup(input: SignupInput) {
   return user;
 }
 
+const RESEND_COOLDOWN_MS = 60 * 1000;
+// The token expires 24h after it was sent, so expiry minus one day is the send time.
+function sentRecently(expires?: Date | null) {
+  return !!expires && expires.getTime() - DAY_MS > Date.now() - RESEND_COOLDOWN_MS;
+}
+
 export async function resendVerification(email: string) {
-  const user = await User.findOne({ email: email.toLowerCase() }).select("emailVerified");
-  if (user && !user.emailVerified) {
+  const user = await User.findOne({ email: email.toLowerCase() }).select("emailVerified emailVerifyExpires");
+  if (user && !user.emailVerified && !sentRecently(user.emailVerifyExpires)) {
     await issueVerification(user);
   }
   // Same response either way, so this can't reveal which emails are registered.
