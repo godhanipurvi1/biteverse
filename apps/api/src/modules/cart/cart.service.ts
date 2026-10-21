@@ -1,23 +1,36 @@
 ﻿import { Cart } from "./cart.model.js";
 import { computeTotals } from "@biteverse/shared";
 import type { Paise } from "@biteverse/shared";
+import { HttpError } from "../../lib/errors.js";
+import { activeOfferByCode, findUsableOffer, toRule } from "../offers/offer.service.js";
 
-export async function getCart(userId: string, restaurantSlug?: string) {
+export type CartMode = "delivery" | "pickup";
+
+type CartLike = { items: any[]; restaurantSlug: string; couponCode?: string | null };
+
+const view = (cart: any): CartLike => ({
+  items: cart.items as any[],
+  restaurantSlug: cart.restaurantSlug,
+  couponCode: cart.couponCode,
+});
+
+const emptyCart = {
+  items: [],
+  subtotalInr: 0,
+  discountInr: 0,
+  gstInr: 0,
+  deliveryFeeInr: 0,
+  packagingInr: 0,
+  totalInr: 0,
+  couponCode: null as string | null,
+  couponNote: null as string | null,
+  restaurantSlug: null as string | null,
+};
+
+export async function getCart(userId: string, mode: CartMode = "delivery") {
   const cart = await Cart.findOne({ userId });
-  
-  if (!cart) {
-    return {
-      items: [],
-      subtotalInr: 0,
-      gstInr: 0,
-      deliveryFeeInr: 0,
-      packagingInr: 0,
-      totalInr: 0,
-      restaurantSlug: restaurantSlug || null,
-    };
-  }
-
-  return computeCartTotals(cart.items as any[], cart.restaurantSlug, "delivery");
+  if (!cart) return emptyCart;
+  return priceCart(view(cart), mode);
 }
 
 export async function addToCart(
@@ -45,7 +58,7 @@ export async function addToCart(
   }
 
   await cart.save();
-  return computeCartTotals(cart.items as any[], cart.restaurantSlug, "delivery");
+  return priceCart(view(cart), "delivery");
 }
 
 export async function updateCartItem(userId: string, menuItemName: string, quantity: number) {
@@ -63,7 +76,7 @@ export async function updateCartItem(userId: string, menuItemName: string, quant
   }
 
   await cart.save();
-  return computeCartTotals(cart.items as any[], cart.restaurantSlug, "delivery");
+  return priceCart(view(cart), "delivery");
 }
 
 export async function removeFromCart(userId: string, menuItemName: string) {
@@ -73,37 +86,54 @@ export async function removeFromCart(userId: string, menuItemName: string) {
   const items = cart.items as any[];
   const idx = items.findIndex((item) => item.menuItemName === menuItemName);
   if (idx > -1) items.splice(idx, 1);
-  
+
   await cart.save();
-  return computeCartTotals(cart.items as any[], cart.restaurantSlug, "delivery");
+  return priceCart(view(cart), "delivery");
 }
 
 export async function clearCart(userId: string) {
   await Cart.updateOne({ userId }, { items: [] });
 }
 
-function computeCartTotals(items: any[], restaurantSlug: string, mode: "delivery" | "pickup") {
-  const lines = items.map((item) => ({
+export async function applyCoupon(userId: string, code: string, mode: CartMode) {
+  const cart = await Cart.findOne({ userId });
+  if (!cart || cart.items.length === 0) throw new HttpError(400, "Your cart is empty");
+  const subtotal = (cart.items as any[]).reduce((sum, i) => sum + i.priceInr * i.quantity, 0);
+  const { offer } = await findUsableOffer(code, subtotal);
+  cart.couponCode = offer.code;
+  await cart.save();
+  return priceCart(view(cart), mode);
+}
+
+export async function removeCoupon(userId: string, mode: CartMode) {
+  await Cart.updateOne({ userId }, { $unset: { couponCode: 1 } });
+  return getCart(userId, mode);
+}
+
+async function priceCart(cart: CartLike, mode: CartMode) {
+  const offer = cart.couponCode ? await activeOfferByCode(cart.couponCode) : null;
+  const lines = cart.items.map((item) => ({
     lineTotal: (item.priceInr * item.quantity) as Paise,
   }));
 
-  const totals = computeTotals({
-    mode,
-    lines,
-  });
+  const totals = computeTotals({ mode, lines, discountRule: offer ? toRule(offer) : null });
 
   return {
-    items: items.map((item) => ({
-      restaurantSlug,
+    items: cart.items.map((item) => ({
+      restaurantSlug: cart.restaurantSlug,
       menuItemName: item.menuItemName,
       quantity: item.quantity,
       priceInr: item.priceInr,
     })),
     subtotalInr: totals.subtotal,
+    discountInr: totals.discount,
     gstInr: totals.gst,
     deliveryFeeInr: totals.deliveryFee,
     packagingInr: totals.packagingFee,
     totalInr: totals.grandTotal,
-    restaurantSlug,
+    couponCode: offer ? offer.code : null,
+    couponNote:
+      totals.discountReason === "BELOW_MIN_ORDER" ? "Add more items to reach this coupon's minimum order" : null,
+    restaurantSlug: cart.restaurantSlug,
   };
 }

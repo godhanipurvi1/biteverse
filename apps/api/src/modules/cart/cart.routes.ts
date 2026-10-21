@@ -1,13 +1,15 @@
 ﻿import { Router, type Request, type Response } from "express";
 import { requireAuth } from "../../middleware/auth.js";
 import * as cartService from "./cart.service.js";
+import { HttpError } from "../../lib/errors.js";
 
 const router = Router();
 
 router.get("/", requireAuth, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id as string;
-    const cart = await cartService.getCart(userId);
+    const mode = req.query.mode === "pickup" ? "pickup" : "delivery";
+    const cart = await cartService.getCart(userId, mode);
     res.json(cart);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch cart" });
@@ -59,6 +61,20 @@ router.delete("/items/:menuItemName", requireAuth, async (req: Request, res: Res
   } catch (error) {
     res.status(500).json({ error: "Failed to remove from cart" });
   }
+});
+
+router.post("/coupon", requireAuth, async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id as string;
+  const code = typeof req.body?.code === "string" ? req.body.code : "";
+  const mode = req.body?.mode === "pickup" ? "pickup" : "delivery";
+  if (!code.trim()) throw new HttpError(400, "Enter a coupon code");
+  res.json(await cartService.applyCoupon(userId, code, mode));
+});
+
+router.delete("/coupon", requireAuth, async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id as string;
+  const mode = req.query.mode === "pickup" ? "pickup" : "delivery";
+  res.json(await cartService.removeCoupon(userId, mode));
 });
 
 export default router;

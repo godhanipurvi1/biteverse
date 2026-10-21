@@ -22,6 +22,8 @@ const orderSchema = new Schema(
     gstInr: { type: Number, required: true, min: 0 },
     deliveryFeeInr: { type: Number, default: 0, min: 0 },
     packagingInr: { type: Number, default: 0, min: 0 },
+    couponCode: { type: String },
+    discountInr: { type: Number, default: 0, min: 0 },
     idempotencyKey: { type: String, unique: true, sparse: true },
   },
   { timestamps: true },

@@ -14,6 +14,7 @@ const cartSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     restaurantSlug: { type: String, required: true },
     items: { type: [cartItemSchema], default: [] },
+    couponCode: { type: String },
   },
   { timestamps: true },
 );

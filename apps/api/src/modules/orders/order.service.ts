@@ -3,6 +3,7 @@ import { Cart } from "../cart/cart.model.js";
 import { computeTotals } from "@biteverse/shared";
 import type { Paise } from "@biteverse/shared";
 import crypto from "crypto";
+import { activeOfferByCode, toRule } from "../offers/offer.service.js";
 
 export async function createOrder(
   userId: string,
@@ -23,7 +24,8 @@ export async function createOrder(
     lineTotal: (item.priceInr * item.quantity) as Paise,
   }));
 
-  const totals = computeTotals({ mode, lines });
+  const offer = cart.couponCode ? await activeOfferByCode(cart.couponCode) : null;
+  const totals = computeTotals({ mode, lines, discountRule: offer ? toRule(offer) : null });
 
   const order = new Order({
     userId,
@@ -36,11 +38,13 @@ export async function createOrder(
     deliveryFeeInr: totals.deliveryFee,
     packagingInr: totals.packagingFee,
     totalInr: totals.grandTotal,
+    couponCode: offer && totals.discount > 0 ? offer.code : undefined,
+    discountInr: totals.discount,
     idempotencyKey,
   });
 
   await order.save();
-  await Cart.updateOne({ userId }, { items: [] });
+  await Cart.updateOne({ userId }, { items: [], $unset: { couponCode: 1 } });
   return order;
 }
 
