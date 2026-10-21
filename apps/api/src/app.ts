@@ -8,6 +8,7 @@ import { restaurantRouter } from "./modules/restaurants/restaurant.routes.js";
 import cartRouter from "./modules/cart/cart.routes.js";
 import orderRouter from "./modules/orders/order.routes.js";
 import { adminOrderRouter } from "./modules/orders/admin.routes.js";
+import { offerRouter, adminOfferRouter } from "./modules/offers/offer.routes.js";
 
 export const app = express();
 
@@ -28,4 +29,6 @@ app.use("/api/restaurants", restaurantRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/admin", adminOrderRouter);
+app.use("/api/admin", adminOfferRouter);
+app.use("/api/offers", offerRouter);
 app.use(errorHandler);
