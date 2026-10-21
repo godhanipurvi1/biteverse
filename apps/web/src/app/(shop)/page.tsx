@@ -3,15 +3,22 @@ import Link from "next/link";
 import styles from "@/features/auth/auth.module.css";
 import { useSession } from "@/features/auth/use-session";
 
+const capitalize = (s: string) =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
 export default function HomePage() {
   const { user, loading } = useSession();
 
   return (
     <>
-      <section className="hero">
+      <section className="hero" style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
         <div className="container">
           <h1>Great food, delivered to you</h1>
-          <p>{user ? `Welcome, ${user.name}!` : "Create an account to get started."}</p>
+          <p style={{ margin: "0.75rem 0 1.75rem" }}>
+            {user
+              ? `Welcome, ${capitalize(user.name)}!`
+              : "Create an account to get started."}
+          </p>
           <div className="hero__actions">
             {!user && !loading && (
               <>
@@ -37,7 +44,7 @@ export default function HomePage() {
           <article className="feature">
             <span className="tag">Live</span>
             <h2>Restaurants</h2>
-            <p>Browse menus from places near you.</p>
+            <p style={{ minHeight: "3em" }}>Browse menus from places near you.</p>
             <Link href="/restaurants" style={{ marginTop: "1rem" }}>
               Order now →
             </Link>
@@ -45,7 +52,7 @@ export default function HomePage() {
           <article className="feature">
             <span className="tag">Live</span>
             <h2>Offers</h2>
-            <p>Coupons and deals applied at checkout.</p>
+            <p style={{ minHeight: "3em" }}>Coupons and deals applied at checkout.</p>
             <Link href="/offers" style={{ marginTop: "1rem" }}>
               See offers →
             </Link>
@@ -53,7 +60,7 @@ export default function HomePage() {
           <article className="feature">
             <span className="tag">Live</span>
             <h2>Live tracking</h2>
-            <p>Follow your order from kitchen to door.</p>
+            <p style={{ minHeight: "3em" }}>Follow your order from kitchen to door.</p>
             <Link href="/order" style={{ marginTop: "1rem" }}>
               Track orders →
             </Link>
