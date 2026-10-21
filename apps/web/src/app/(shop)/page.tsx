@@ -1,39 +1,58 @@
-﻿import Link from "next/link";
+﻿"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import styles from "@/features/auth/auth.module.css";
-
-const upcoming = [
-  { title: "Restaurants", text: "Browse menus from places near you." },
-  { title: "Offers", text: "Coupons and deals applied at checkout." },
-  { title: "Live tracking", text: "Follow your order from kitchen to door." },
-];
+import { useSession } from "@/features/auth/use-session";
 
 export default function HomePage() {
+  const { user, loading } = useSession();
+
   return (
     <>
       <section className="hero">
         <div className="container">
           <h1>Great food, delivered to you</h1>
-          <p>Create an account to get started.</p>
+          <p>{user ? `Welcome, ${user.name}!` : "Create an account to get started."}</p>
           <div className="hero__actions">
-            <Link href="/signup" className={styles.button}>
-              Create an account
-            </Link>
-            <Link href="/login" className={styles.buttonOutline}>
-              Log in
-            </Link>
+            {!user && !loading && (
+              <>
+                <Link href="/signup" className={styles.button}>
+                  Create an account
+                </Link>
+                <Link href="/login" className={styles.buttonOutline}>
+                  Log in
+                </Link>
+              </>
+            )}
+            {user && (
+              <Link href="/restaurants" className={styles.button}>
+                Browse Restaurants
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
       <section className="container">
         <div className="feature-grid">
-          {upcoming.map((item) => (
-            <article className="feature" key={item.title}>
-              <span className="tag">Coming soon</span>
-              <h2>{item.title}</h2>
-              <p>{item.text}</p>
-            </article>
-          ))}
+          <article className="feature">
+            <span className="tag">Live</span>
+            <h2>Restaurants</h2>
+            <p>Browse menus from places near you.</p>
+            <Link href="/restaurants" style={{ marginTop: "1rem" }}>
+              Order now →
+            </Link>
+          </article>
+          <article className="feature">
+            <span className="tag">Coming soon</span>
+            <h2>Offers</h2>
+            <p>Coupons and deals applied at checkout.</p>
+          </article>
+          <article className="feature">
+            <span className="tag">Coming soon</span>
+            <h2>Live tracking</h2>
+            <p>Follow your order from kitchen to door.</p>
+          </article>
         </div>
       </section>
     </>
