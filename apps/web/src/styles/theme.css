@@ -1,0 +1,247 @@
+﻿/*
+  DESIGN TOKENS
+  Change colors, fonts, spacing, and radius here. Every page reads these values.
+  Example: change --color-brand to recolor all buttons and links.
+*/
+:root {
+  /* Colors */
+  --color-brand: #e8590c;
+  --color-brand-contrast: #ffffff;
+  --color-bg: #ffffff;
+  --color-surface: #f6f6f7;
+  --color-text: #17171a;
+  --color-muted: #6b6b73;
+  --color-border: #e3e3e8;
+  --color-success: #1b7f3b;
+  --color-success-soft: #e7f5ec;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #fff4e0;
+  --color-danger: #b42318;
+
+  /* Typography */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-sm: 0.9rem;
+  --text-base: 1rem;
+  --text-lg: 1.15rem;
+  --text-xl: 1.75rem;
+  --text-hero: clamp(2rem, 5vw, 3rem);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* Shape and depth */
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.06);
+
+  /* Layout */
+  --container-width: 1120px;
+  --narrow-width: 420px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  flex: 1;
+}
+
+a {
+  color: var(--color-brand);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--space-4);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: var(--text-xl);
+}
+
+h2 {
+  font-size: var(--text-lg);
+}
+
+p {
+  margin: 0 0 var(--space-3);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+}
+
+dt {
+  color: var(--color-muted);
+}
+
+dd {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Shared layout */
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+}
+
+.brand {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.brand span {
+  color: var(--color-brand);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.nav__link {
+  color: var(--color-text);
+}
+
+.site-footer {
+  margin-top: var(--space-12);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-6);
+}
+
+.hero {
+  padding-block: var(--space-12);
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: var(--text-hero);
+}
+
+.hero p {
+  max-width: 36rem;
+  margin-inline: auto;
+  color: var(--color-muted);
+  font-size: var(--text-lg);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-4);
+  padding-bottom: var(--space-12);
+}
+
+.feature {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.feature p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.tag {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: 0.75rem;
+  font-weight: 600;
+}

@@ -1,0 +1,171 @@
+﻿/* Component styles. Colors, spacing, and radius come from the tokens in src/styles/theme.css. */
+
+.page {
+  max-width: var(--narrow-width);
+  margin: var(--space-12) auto;
+  padding: 0 var(--space-4);
+}
+
+.pageWide {
+  max-width: var(--container-width);
+  margin: var(--space-8) auto;
+  padding: 0 var(--space-4);
+}
+
+.panelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.panelHeader h1 {
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.card h2 {
+  margin: 0;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.input {
+  padding: 0.65rem 0.8rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-weight: 400;
+}
+
+.input:focus {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.button,
+.buttonOutline,
+.buttonSmall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button {
+  padding: 0.7rem 1.1rem;
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+}
+
+.buttonSmall {
+  padding: 0.45rem 0.9rem;
+  font-size: var(--text-sm);
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+}
+
+.buttonOutline {
+  padding: 0.7rem 1.1rem;
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.button:hover,
+.buttonOutline:hover,
+.buttonSmall:hover {
+  text-decoration: none;
+  filter: brightness(0.96);
+}
+
+.button:disabled,
+.buttonOutline:disabled,
+.buttonSmall:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.badgeOk {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.badgeWarn {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.error,
+.success {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.muted {
+  margin-top: var(--space-4);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
