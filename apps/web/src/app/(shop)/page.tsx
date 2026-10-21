@@ -2,6 +2,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import styles from "@/features/home/home.module.css";
+import anim from "@/features/home/animations/animations.module.css";
+import { Reveal } from "@/features/home/animations/Reveal";
 import { useSession } from "@/features/auth/use-session";
 
 const capitalize = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -30,27 +32,9 @@ const PinIcon = () => (
 );
 
 const features = [
-  {
-    title: "Restaurants",
-    text: "Explore top-rated restaurants near you and discover new favorites.",
-    href: "/restaurants",
-    cta: "Browse Restaurants",
-    icon: <StoreIcon />,
-  },
-  {
-    title: "Offers",
-    text: "Get the best deals, discounts and exclusive offers.",
-    href: "/offers",
-    cta: "View Offers",
-    icon: <TagIcon />,
-  },
-  {
-    title: "Live tracking",
-    text: "Track your order in real-time and know exactly when it arrives.",
-    href: "/order",
-    cta: "Track Order",
-    icon: <PinIcon />,
-  },
+  { title: "Restaurants", text: "Explore top-rated restaurants near you and discover new favorites.", href: "/restaurants", cta: "Browse Restaurants", icon: <StoreIcon /> },
+  { title: "Offers", text: "Get the best deals, discounts and exclusive offers.", href: "/offers", cta: "View Offers", icon: <TagIcon /> },
+  { title: "Live tracking", text: "Track your order in real-time and know exactly when it arrives.", href: "/order", cta: "Track Order", icon: <PinIcon /> },
 ];
 
 export default function HomePage() {
@@ -58,57 +42,74 @@ export default function HomePage() {
 
   return (
     <>
-      <section className={styles.hero}>
-        <div>
-          <span className={styles.pill}>🍴 Good Food • Better Mood</span>
-          <h1 className={styles.title}>
-            Great food,
-            <br />
-            delivered to you
-          </h1>
-          <p className={styles.subtitle}>
-            Discover your favorite restaurants, order delicious food, and enjoy fast &amp; reliable
-            delivery, all in one place.
+      {user && !user.emailVerified && (
+        <div className="container" style={{ paddingTop: "1rem" }}>
+          <p>
+            Your email isn&apos;t verified.{" "}
+            <Link href="/verify-email">Verify it now</Link>.
           </p>
-
-          {user && (
-            <Link href="/restaurants" className={styles.cta}>
-              Browse Restaurants →
-            </Link>
-          )}
-          {!user && !loading && (
-            <>
-              <Link href="/signup" className={styles.cta}>
-                Create an account
-              </Link>
-              <Link href="/login" className={styles.ctaOutline}>
-                Log in
-              </Link>
-            </>
-          )}
         </div>
+      )}
 
-        <Image
-          src="/images/hero-bowl.png"
-          alt="Fresh bowl of chicken, avocado and salad"
-          width={560}
-          height={440}
-          priority
-          className={styles.heroImage}
-        />
+      <section className={styles.hero} style={{ padding: "3rem 1.5rem", textAlign: "center" }}>
+        <Reveal variant="left">
+          <div>
+            <span className={styles.pill}>🍴 Good Food • Better Mood</span>
+            <h1 className={styles.title}>
+              Great food,
+              <br />
+              delivered to you
+            </h1>
+            <p className={styles.subtitle}>
+              Discover your favorite restaurants, order delicious food, and enjoy fast &amp; reliable
+              delivery, all in one place.
+            </p>
+
+            {user && (
+              <Link href="/restaurants" className={styles.cta}>
+                Browse Restaurants →
+              </Link>
+            )}
+            {!user && !loading && (
+              <>
+                <Link href="/signup" className={styles.cta}>
+                  Create an account
+                </Link>
+                <Link href="/login" className={styles.ctaOutline}>
+                  Log in
+                </Link>
+              </>
+            )}
+          </div>
+        </Reveal>
+
+        <Reveal variant="right" delay={150}>
+          <div className={anim.float}>
+            <Image
+              src="/images/hero-bowl.png"
+              alt="Fresh bowl of chicken, avocado and salad"
+              width={560}
+              height={440}
+              priority
+              className={styles.heroImage}
+            />
+          </div>
+        </Reveal>
       </section>
 
       <section className={styles.features}>
-        {features.map((f) => (
-          <article key={f.title} className={styles.card}>
-            <span className={styles.tag}>Live</span>
-            <div className={styles.iconWrap}>{f.icon}</div>
-            <h2 className={styles.cardTitle}>{f.title}</h2>
-            <p className={styles.cardText}>{f.text}</p>
-            <Link href={f.href} className={styles.cardLink}>
-              {f.cta} →
-            </Link>
-          </article>
+        {features.map((f, i) => (
+          <Reveal key={f.title} variant="up" delay={200 + i * 120}>
+            <article className={`${styles.card} ${anim.lift}`}>
+              <span className={styles.tag}>Live</span>
+              <div className={styles.iconWrap}>{f.icon}</div>
+              <h2 className={styles.cardTitle}>{f.title}</h2>
+              <p className={styles.cardText}>{f.text}</p>
+              <Link href={f.href} className={styles.cardLink}>
+                {f.cta} →
+              </Link>
+            </article>
+          </Reveal>
         ))}
       </section>
     </>
