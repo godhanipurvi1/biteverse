@@ -359,3 +359,38 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* BITEVERSE-DISH-SEARCH */
+.search { margin: 18px 0 8px; }
+.search input {
+  width: 100%;
+  height: 56px;
+  padding: 0 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 17px;
+  box-sizing: border-box;
+}
+.search input:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+/* BITEVERSE-CHIPS */
+.chips { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0 0; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 8px 22px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 17px;
+  text-align: center;
+  text-decoration: none;
+}
+.chip:hover { outline: 1px solid var(--brand); }
+.chipOn { background: var(--brand); color: var(--brand-ink); }

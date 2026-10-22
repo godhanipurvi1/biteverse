@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import Footer from '../../components/Footer';
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthError } from "../../lib/orders";
@@ -375,7 +376,8 @@ export default function HomePage() {
               </div>
             </div>
           </section>
-        </main>
+      </main>
+      <Footer />
       </div>
 
       <MenuSheet restaurant={menuFor} onClose={() => setMenuFor(null)} onToast={setToast} />
@@ -395,10 +397,6 @@ export default function HomePage() {
       />
 
       <Toast message={toast} onDone={() => setToast(null)} />
-
-      <footer className="footer">
-        <div className="container">&copy; 2026 BiteVerse. All rights reserved.</div>
-      </footer>
     </>
   );
 }

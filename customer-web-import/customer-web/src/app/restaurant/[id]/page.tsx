@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import Footer from '../../../components/Footer';
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { AuthError } from "../../../lib/orders";
@@ -90,6 +91,7 @@ export default function RestaurantPage() {
   const [status, setStatus] = useState<"loading" | "ready" | "missing" | "error">("loading");
   const [favIds, setFavIds] = useState<string[]>([]);
   const [vegOnly, setVegOnly] = useState(false);
+  const [q, setQ] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -165,9 +167,19 @@ export default function RestaurantPage() {
   }
 
   const dishes = useMemo(
-    () => (restaurant?.menu ?? []).filter((m) => !vegOnly || m.veg === true),
-    [restaurant, vegOnly]
+    () => (restaurant?.menu ?? []).filter((m) => (!vegOnly || m.veg === true) && (q.trim() === "" || m.name.toLowerCase().includes(q.trim().toLowerCase()))),
+    [restaurant, vegOnly, q]
   );
+
+  const chips = useMemo(() => {
+    if (!restaurant) return [] as Restaurant[];
+    const list = (getRestaurantCache<RawRestaurant>() ?? []).map(toRestaurant);
+    const mine = restaurant.categories ?? [];
+    const same = list.filter(
+      (r) => String(r._id) !== String(restaurant._id) && (r.categories ?? []).some((c) => mine.includes(c))
+    );
+    return [restaurant, ...same].slice(0, 10);
+  }, [restaurant]);
 
   const qtyOf = (dishId: string) => {
     if (!restaurant) return 0;
@@ -207,7 +219,7 @@ export default function RestaurantPage() {
             {status === "ready" && restaurant && (
               <>
                 <nav className={styles.crumbs} aria-label="Breadcrumb">
-                  <a href="/#restaurants">Restaurants</a>
+                  <a href="/#restaurants">&larr; All restaurants</a>
                   <span aria-hidden="true">/</span>
                   <strong>{restaurant.name}</strong>
                 </nav>
@@ -254,6 +266,31 @@ export default function RestaurantPage() {
                     </button>
                   </div>
                 </header>
+
+                {chips.length > 1 && (
+                  <div className={styles.chips}>
+                    {chips.map((r) => (
+                      <a
+                        key={String(r._id)}
+                        href={`/restaurant/${r._id}`}
+                        className={String(r._id) === String(restaurant._id) ? `${styles.chip} ${styles.chipOn}` : styles.chip}
+                        aria-current={String(r._id) === String(restaurant._id) ? "page" : undefined}
+                      >
+                        {r.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                <div className={styles.search}>
+                  <input
+                    type="search"
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder={`Search dishes at ${restaurant.name}`}
+                    aria-label="Search dishes"
+                  />
+                </div>
 
                 <div className={styles.tabs}>
                   <span className={styles.tabOn}>
@@ -317,7 +354,8 @@ export default function RestaurantPage() {
               </>
             )}
           </div>
-        </main>
+      </main>
+      <Footer />
       </div>
 
       {cartCount > 0 && (

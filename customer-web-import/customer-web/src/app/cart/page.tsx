@@ -1,252 +1,300 @@
 ﻿'use client';
 
+import Footer from '../../components/Footer';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useCart, changeQty, removeLine, groupByRestaurant } from '../../lib/cart';
 import styles from './cart.module.css';
 
-const CART_KEY = 'biteverse-cart';
-const FREE_DELIVERY_OVER = 249;
-const DELIVERY_FEE = 40;
-const PACKING_CHARGE = 15;
-const COUPONS: Record<string, { percent: number; maxOff: number }> = {
-  WELCOME10: { percent: 10, maxOff: 100 },
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000';
+const COUPON_KEY = 'biteverse-coupon';
+const OFFER_CODES = ['WELCOME10'];
+
+type Quote = {
+  subtotal: number;
+  discount: number;
+  fee: number;
+  tax?: number;
+  total: number;
+  couponApplied: string | null;
+  couponMessage?: string;
 };
-
-type CartLine = {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  restaurantId: string;
-  restaurantName: string;
-};
-
-type Group = { id: string; name: string; items: CartLine[]; subtotal: number };
-
-// The stored value is either an array of lines or an object with a `lines` array.
-// Read both, so this page matches whatever the cart panel saved.
-function readRaw(): unknown {
-  try {
-    const raw = localStorage.getItem(CART_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function loadCart(): CartLine[] {
-  const raw = readRaw();
-  if (Array.isArray(raw)) return raw as CartLine[];
-  if (raw && typeof raw === 'object' && Array.isArray((raw as { lines?: unknown }).lines)) {
-    return (raw as { lines: CartLine[] }).lines;
-  }
-  return [];
-}
-
-// Keep the same shape the cart panel uses, so both stay in sync.
-function saveCart(lines: CartLine[]) {
-  try {
-    const raw = readRaw();
-    const value =
-      raw && typeof raw === 'object' && !Array.isArray(raw)
-        ? { ...(raw as object), lines }
-        : lines;
-    localStorage.setItem(CART_KEY, JSON.stringify(value));
-  } catch {
-    // storage unavailable: keep the in-memory state
-  }
-}
 
 const rupees = (n: number) => `₹${Math.round(n)}`;
 
-function Row({ label, value, green }: { label: string; value: string; green?: boolean }) {
+function emojiFor(name: string) {
+  const n = name.toLowerCase();
+  if (n.includes('pizza')) return '🍕';
+  if (n.includes('bread')) return '🥖';
+  if (n.includes('burger')) return '🍔';
+  if (n.includes('biryani') || n.includes('rice')) return '🍚';
+  if (n.includes('dosa')) return '🥞';
+  if (n.includes('noodle') || n.includes('fried')) return '🍜';
+  return '🍽️';
+}
+
+const PHOTO_EXTS = ['jpg', 'png', 'webp', 'jpeg'];
+
+function slugify(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function imageOf(l: unknown): string | undefined {
+  const v = l as { image?: unknown; imageUrl?: unknown };
+  if (typeof v.image === 'string' && v.image) return v.image;
+  if (typeof v.imageUrl === 'string' && v.imageUrl) return v.imageUrl;
+  return undefined;
+}
+
+function FoodThumb({ name, image }: { name: string; image?: string }) {
+  const [tryIdx, setTryIdx] = useState(0);
+  const candidates = image
+    ? [image]
+    : PHOTO_EXTS.map((x) => `/images/food/${slugify(name)}.${x}`);
+  if (tryIdx >= candidates.length) {
+    return <div className={styles.thumb} aria-hidden="true">{emojiFor(name)}</div>;
+  }
   return (
-    <div className={`${styles.row} ${green ? styles.rowGreen : ''}`}>
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className={styles.photo}
+      src={candidates[tryIdx]}
+      alt={name}
+      onError={() => setTryIdx((i) => i + 1)}
+    />
   );
 }
 
 export default function CartPage() {
-  const [lines, setLines] = useState<CartLine[]>([]);
+  const cart = useCart();
+  const lines = cart?.lines ?? [];
+  const groups = useMemo(() => groupByRestaurant(cart), [cart]);
+  const itemsKey = lines.map((l) => `${l.restaurantId}:${l.id}:${l.qty}`).join('|');
+  const count = lines.reduce((n, l) => n + l.qty, 0);
+
   const [loaded, setLoaded] = useState(false);
-  const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<string | null>(null);
-  const [couponError, setCouponError] = useState('');
+  const [codeInput, setCodeInput] = useState('');
+  const [couponMsg, setCouponMsg] = useState('');
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [quoteError, setQuoteError] = useState('');
 
   useEffect(() => {
-    setLines(loadCart());
-    const saved = localStorage.getItem("biteverse-coupon"); if (saved && COUPONS[saved]) setCoupon(saved); setLoaded(true);
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === CART_KEY) setLines(loadCart());
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    try {
+      const saved = localStorage.getItem(COUPON_KEY);
+      if (saved) setCoupon(saved);
+    } catch {
+      // storage unavailable
+    }
+    setLoaded(true);
   }, []);
 
-  const update = (next: CartLine[]) => {
-    setLines(next);
-    saveCart(next);
-  };
+  function priceCart(code: string | null): Promise<Quote> {
+    return fetch(`${API_URL}/api/orders/quote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: lines.map((l) => ({ restaurantId: l.restaurantId, menuItemId: l.id, qty: l.qty })),
+        couponCode: code ?? '',
+      }),
+    }).then(async (res) => {
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || `Could not price your cart (${res.status})`);
+      return json as Quote;
+    });
+  }
 
-  const changeQty = (id: string, delta: number) => {
-    update(
-      lines
-        .map((l) => (l.id === id ? { ...l, qty: l.qty + delta } : l))
-        .filter((l) => l.qty > 0)
-    );
-  };
-
-  const removeLine = (id: string) => update(lines.filter((l) => l.id !== id));
-
-  const applyCoupon = () => {
-    const code = couponInput.trim().toUpperCase();
-    if (!COUPONS[code]) {
-      setCouponError('Invalid coupon code');
+  useEffect(() => {
+    if (!loaded) return;
+    if (lines.length === 0) {
+      setQuote(null);
       return;
     }
-    setCoupon(code); localStorage.setItem("biteverse-coupon", code);
-    setCouponInput('');
-    setCouponError('');
-  };
+    let cancelled = false;
+    setQuoteError('');
+    priceCart(coupon)
+      .then((q) => {
+        if (!cancelled) setQuote(q);
+      })
+      .catch((err: Error) => {
+        if (!cancelled) {
+          setQuoteError(
+            err.message === 'Failed to fetch'
+              ? 'Could not reach the server. Check that the API is running on port 5000.'
+              : err.message
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, itemsKey, coupon]);
 
-  const groups = useMemo<Group[]>(() => {
-    const map = new Map<string, Group>();
-    for (const l of lines) {
-      const g = map.get(l.restaurantId) ?? { id: l.restaurantId, name: l.restaurantName, items: [], subtotal: 0 };
-      g.items.push(l);
-      g.subtotal += l.price * l.qty;
-      map.set(l.restaurantId, g);
+  function applyCoupon(code: string) {
+    const clean = code.trim().toUpperCase();
+    if (!clean) return;
+    priceCart(clean)
+      .then((q) => {
+        if (q.couponApplied === clean) {
+          setCoupon(clean);
+          setCouponMsg('');
+          setCodeInput('');
+          try {
+            localStorage.setItem(COUPON_KEY, clean);
+          } catch {
+            // ignore
+          }
+        } else {
+          setCouponMsg(q.couponMessage || 'That code is not valid for this cart.');
+        }
+      })
+      .catch((err: Error) => setCouponMsg(err.message));
+  }
+
+  function removeCoupon() {
+    setCoupon(null);
+    setCouponMsg('');
+    try {
+      localStorage.removeItem(COUPON_KEY);
+    } catch {
+      // ignore
     }
-    return Array.from(map.values());
-  }, [lines]);
+  }
 
-  const itemCount = lines.reduce((s, l) => s + l.qty, 0);
-  const itemTotal = groups.reduce((s, g) => s + g.subtotal, 0);
-  const deliveryFee = groups.reduce((s, g) => s + (g.subtotal >= FREE_DELIVERY_OVER ? 0 : DELIVERY_FEE), 0);
-  const packing = groups.length * PACKING_CHARGE;
-  const rule = coupon ? COUPONS[coupon] : null;
-  const discount = rule ? Math.min(Math.round((itemTotal * rule.percent) / 100), rule.maxOff) : 0;
-  const toPay = itemTotal - discount + deliveryFee + packing;
+  if (!loaded) {
+    return (
+      <main className={styles.page}>
+        <p className={styles.muted}>Loading cart…</p>
+      </main>
+    );
+  }
 
-  const single = groups.length === 1 ? groups[0] : null;
-  const remaining = single ? Math.max(0, FREE_DELIVERY_OVER - single.subtotal) : 0;
-  const pct = single ? Math.min(100, (single.subtotal / FREE_DELIVERY_OVER) * 100) : 0;
+  if (lines.length === 0) {
+    return (
+      <main className={styles.page}>
+        <Link href="/" className={styles.back}>← Back to menu</Link>
+        <div className={styles.empty}>
+          <h2 className={styles.emptyTitle}>Your cart is empty</h2>
+          <p className={styles.muted}>Add something from a restaurant to get started.</p>
+          <Link href="/" className={styles.primary}>Browse restaurants</Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className={styles.page}>
-      <div className={styles.topbar}>
-        <Link href="/" className={styles.brand}>BiteVerse</Link>
-        <Link href="/" className={styles.back}>← Back to restaurants</Link>
-      </div>
+    <><main className={styles.page}>
+      <Link href="/" className={styles.back}>← Back to menu</Link>
+      <h1 className={styles.title}>Your cart</h1>
+      <p className={styles.sub}>
+        From <strong>{groups.map((g) => g.restaurantName).join(', ')}</strong> · {count} {count === 1 ? 'item' : 'items'}
+      </p>
 
-      <ol className={styles.steps}>
-        <li className={styles.stepActive}><span>1</span> Cart</li>
-        <li><span>2</span> Address and payment</li>
-        <li><span>3</span> Confirmed</li>
-      </ol>
-
-      {!loaded ? (
-        <div className={styles.empty}>Loading your cart…</div>
-      ) : lines.length === 0 ? (
-        <div className={styles.empty}>
-          <h2>Your cart is empty</h2>
-          <p>Add dishes from a restaurant to see them here.</p>
-          <Link href="/" className={styles.primaryBtn}>Browse restaurants</Link>
-        </div>
-      ) : (
-        <div className={styles.layout}>
-          <section>
-            <div className={styles.heading}>
-              <div>
-                <h1>Your cart</h1>
-                <p className={styles.sub}>
-                  {itemCount} item{itemCount !== 1 ? 's' : ''}
-                  {single ? ` · Ordering from ${single.name}` : ` · ${groups.length} restaurants`}
-                </p>
-              </div>
-              <button className={styles.ghostBtn} onClick={() => update([])}>Clear cart</button>
-            </div>
-
+      <div className={styles.layout}>
+        <div className={styles.main}>
+          <section className={styles.card}>
+            <h3 className={styles.cardTitle}>Your items</h3>
             {groups.map((g) => (
-              <div key={g.id} className={styles.group}>
-                {groups.length > 1 && <h3 className={styles.groupName}>{g.name}</h3>}
-                <div className={styles.card}>
-                  {g.items.map((l) => (
-                    <div key={l.id} className={styles.line}>
-                      <div className={styles.thumb} aria-hidden>🍽️</div>
-                      <div className={styles.lineInfo}>
-                        <div className={styles.lineName}>{l.name}</div>
-                        <div className={styles.lineUnit}>{rupees(l.price)} each</div>
-                        <button className={styles.removeBtn} onClick={() => removeLine(l.id)}>Remove</button>
-                      </div>
-                      <div className={styles.lineRight}>
-                        <div className={styles.qty}>
-                          <button onClick={() => changeQty(l.id, -1)} aria-label={`Decrease ${l.name}`}>−</button>
-                          <span>{l.qty}</span>
-                          <button onClick={() => changeQty(l.id, 1)} aria-label={`Increase ${l.name}`}>+</button>
-                        </div>
-                        <div className={styles.lineTotal}>{rupees(l.price * l.qty)}</div>
-                      </div>
+              <div key={g.restaurantId} className={styles.group}>
+                {groups.length > 1 && <div className={styles.groupName}>{g.restaurantName}</div>}
+                {g.lines.map((l) => (
+                  <div key={`${l.restaurantId}:${l.id}`} className={styles.row}>
+                    <FoodThumb name={l.name} image={imageOf(l)} />
+                    <div className={styles.itemInfo}>
+                      <strong>{l.name}</strong>
+                      <span className={styles.muted}>{rupees(l.price)} each</span>
+                      <button type="button" className={styles.linkBtn} onClick={() => removeLine(l.id)}>
+                        Remove
+                      </button>
                     </div>
-                  ))}
-                </div>
-                <Link href={`/restaurant/${g.id}`} className={styles.addMore}>
-                  ← Add more items from {g.name}
-                </Link>
+                    <div className={styles.lineSide}>
+                      <div className={styles.qty}>
+                        <button type="button" onClick={() => changeQty(l.id, -1)} aria-label={`Decrease ${l.name}`}>−</button>
+                        <span className={styles.qtyValue}>{l.qty}</span>
+                        <button type="button" onClick={() => changeQty(l.id, 1)} aria-label={`Increase ${l.name}`}>+</button>
+                      </div>
+                      <div className={styles.lineTotal}>{rupees(l.price * l.qty)}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
           </section>
-
-          <aside className={styles.bill}>
-            <h3>Bill details</h3>
-
-            {coupon && COUPONS[coupon] ? (
-              <div className={styles.couponApplied}>
-                <span>
-                  {coupon} applied · {COUPONS[coupon].percent}% off up to {rupees(COUPONS[coupon].maxOff)}
-                </span>
-                <button onClick={() => { setCoupon(null); localStorage.removeItem("biteverse-coupon"); }}>Remove</button>
-              </div>
-            ) : (
-              <div className={styles.couponRow}>
-                <input
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
-                  placeholder="Coupon code"
-                  aria-label="Coupon code"
-                />
-                <button onClick={applyCoupon}>Apply</button>
-              </div>
-            )}
-            {couponError && <p className={styles.error}>{couponError}</p>}
-
-            <Row label="Item total" value={rupees(itemTotal)} />
-            {discount > 0 && <Row label="Coupon discount" value={`−${rupees(discount)}`} green />}
-            <Row label="Delivery fee" value={deliveryFee === 0 ? 'FREE' : rupees(deliveryFee)} />
-            <Row label="Packing charge" value={rupees(packing)} />
-
-            <div className={styles.toPay}>
-              <span>To pay</span>
-              <span>{rupees(toPay)}</span>
-            </div>
-
-            {single && remaining > 0 && (
-              <div className={styles.freeHint}>
-                <p>Add {rupees(remaining)} more for free delivery</p>
-                <div className={styles.bar}>
-                  <div style={{ width: `${pct}%` }} />
-                </div>
-              </div>
-            )}
-
-            <Link href="/checkout" className={styles.checkoutBtn}>Proceed to checkout</Link>
-          </aside>
         </div>
-      )}
-    </main>
+
+        <aside className={styles.side}>
+          <section className={styles.card}>
+            <h3 className={styles.cardTitle}>Offers</h3>
+            <div className={styles.codeRow}>
+              <input
+                className={styles.codeInput}
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value)}
+                placeholder="ENTER CODE"
+                maxLength={14}
+              />
+              <button type="button" className={styles.applyBtn} onClick={() => applyCoupon(codeInput)}>
+                Apply
+              </button>
+            </div>
+            {coupon && (
+              <div className={styles.applied}>
+                <span>{coupon} applied</span>
+                <button type="button" className={styles.linkBtn} onClick={removeCoupon}>Remove</button>
+              </div>
+            )}
+            {couponMsg && <p className={styles.error}>{couponMsg}</p>}
+            <div className={styles.chips}>
+              {OFFER_CODES.map((c) => (
+                <button key={c} type="button" className={styles.chip} onClick={() => applyCoupon(c)}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className={styles.card}>
+            <h3 className={styles.cardTitle}>Bill summary</h3>
+            {quoteError && <p className={styles.error}>{quoteError}</p>}
+            {!quote && !quoteError && <p className={styles.muted}>Calculating…</p>}
+            {quote && (
+              <>
+                <div className={styles.billRow}>
+                  <span>Item total</span>
+                  <span className={styles.billValue}>{rupees(quote.subtotal)}</span>
+                </div>
+                {quote.discount > 0 && (
+                  <div className={styles.billRow}>
+                    <span className={styles.discount}>Coupon {quote.couponApplied}</span>
+                    <span className={styles.discount}>−{rupees(quote.discount)}</span>
+                  </div>
+                )}
+                <div className={styles.billRow}>
+                  <span>Delivery fee</span>
+                  <span className={styles.billValue}>{quote.fee === 0 ? 'Free' : rupees(quote.fee)}</span>
+                </div>
+                {typeof quote.tax === 'number' && (
+                  <div className={styles.billRow}>
+                    <span>Taxes and charges</span>
+                    <span className={styles.billValue}>{rupees(quote.tax)}</span>
+                  </div>
+                )}
+                <div className={styles.billTotal}>
+                  <span>To pay</span>
+                  <span>{rupees(quote.total)}</span>
+                </div>
+              </>
+            )}
+            <Link href="/checkout" className={styles.placeBtn}>
+              {quote ? `Proceed to checkout · ${rupees(quote.total)}` : 'Proceed to checkout'}
+            </Link>
+          </section>
+        </aside>
+      </div></main><Footer /></>
   );
 }
+
+
+
 

@@ -412,3 +412,50 @@ input { font: inherit; }
   overflow: visible;
   text-indent: 0;
 }
+
+/* Full-width content area beside the sidebar */
+.main.container {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding-left: 40px;
+  padding-right: 40px;
+  box-sizing: border-box;
+}
+
+/* Desktop: sidebar runs the full page height, beside the footer */
+@media (min-width: 900px) {
+  .shell > .side { grid-row: 1 / span 2; }
+}
+
+/* BITEVERSE-TARGET-LOOK */
+.main.container {
+  padding-left: clamp(24px, 6vw, 120px);
+  padding-right: clamp(24px, 6vw, 120px);
+}
+main { counter-reset: stepno; }
+main .step {
+  counter-increment: stepno;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+main .step::before {
+  content: counter(stepno);
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-weight: 800;
+  font-size: 22px;
+}
+
+/* BITEVERSE-FOOTER-LAYOUT */
+@media (min-width: 1024px) {
+  .shell > .side { grid-row: 1 / span 2; }
+}

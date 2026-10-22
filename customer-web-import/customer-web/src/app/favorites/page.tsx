@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import Footer from '../../components/Footer';
 import { useEffect, useMemo, useState } from "react";
 import { AuthError } from "../../lib/orders";
 import { fetchFavorites, setFavorite } from "../../lib/favorites";
@@ -267,7 +268,8 @@ export default function FavouritesPage() {
               </ul>
             )}
           </div>
-        </main>
+      </main>
+      <Footer />
       </div>
 
       <MenuSheet restaurant={menuFor} onClose={() => setMenuFor(null)} onToast={setToast} />

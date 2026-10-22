@@ -78,7 +78,7 @@ export default function OrderConfirmedPage() {
               <div>
                 <h1>Order placed</h1>
                 <p className={styles.sub}>
-                  {order.restaurants.join(', ')} has received your order and is preparing it now. A rider will be assigned shortly.
+                  {(order.restaurants ?? []).join(', ')} has received your order and is preparing it now. A rider will be assigned shortly.
                 </p>
               </div>
               <div className={styles.orderNo}>
@@ -100,7 +100,7 @@ export default function OrderConfirmedPage() {
                 <div className={styles.tNow}>
                   <span className={styles.dot} />
                   <div>
-                    <strong>Preparing at {order.restaurants[0] ?? 'the restaurant'}</strong>
+                    <strong>Preparing at {(order.restaurants ?? [])[0] ?? 'the restaurant'}</strong>
                     <small>About 15 minutes</small>
                   </div>
                 </div>
@@ -175,3 +175,5 @@ export default function OrderConfirmedPage() {
     </main>
   );
 }
+
+

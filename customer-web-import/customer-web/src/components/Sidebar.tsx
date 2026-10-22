@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -70,7 +70,8 @@ const ITEMS: Item[] = [
   },
   {
     label: "Menu",
-    href: "/#menu",
+    href: "/menu",
+    match: ["/menu"],
     icon: (
       <Ico>
         <path d="M5 3v6a2 2 0 0 0 4 0V3" />
