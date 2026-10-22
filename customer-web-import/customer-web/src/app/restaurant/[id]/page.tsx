@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -185,7 +185,7 @@ export default function RestaurantPage() {
       <TopBar onMenu={onMenu} cartCount={cartCount} onNotify={setToast} onOpenCart={() => setCartOpen(true)} />
 
       <div className={`shell ${collapsed ? "collapsed" : ""}`}>
-        <Sidebar open={navOpen} collapsed={collapsed} onClose={() => setNavOpen(false)} />
+        <Sidebar open={navOpen} collapsed={collapsed} onClose={() => setNavOpen(false)} cartCount={cartCount} />
 
         <main className="main container">
           <div className={styles.page}>
@@ -347,4 +347,5 @@ export default function RestaurantPage() {
     </>
   );
 }
+
 

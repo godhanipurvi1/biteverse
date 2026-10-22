@@ -1,0 +1,60 @@
+PS C:\Users\Purvi\Desktop\f> cd "C:\Users\Purvi\Desktop\f\biteverse\server"
+PS C:\Users\Purvi\Desktop\f\biteverse\server> Get-Content src\index.js
+require("dotenv").config();                                                                                                                   
+const app = require("./app");                                                                                                                 
+const connectDB = require("./config/db");                                                                                                     
+                                                                                                                                              
+const PORT = process.env.PORT || 5000;                                                                                                        
+                                                                                                                                              
+connectDB().then(() => {                                                                                                                      
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));                                                                      
+});                                                                                                                                           
+PS C:\Users\Purvi\Desktop\f\biteverse\server> Test-NetConnection -ComputerName 127.0.0.1 -Port 27017                                          
+WARNING: TCP connect to (127.0.0.1 : 27017) failed                                                                                            
+                                                                                                                                              
+                                                                                                                                              
+ComputerName           : 127.0.0.1                                                                                                            
+RemoteAddress          : 127.0.0.1                                                                                                            
+RemotePort             : 27017                                                                                                                
+InterfaceAlias         : Loopback Pseudo-Interface 1
+SourceAddress          : 127.0.0.1
+PingSucceeded          : True
+PingReplyDetails (RTT) : 0 ms
+TcpTestSucceeded       : False
+
+
+
+PS C:\Users\Purvi\Desktop\f\biteverse\server> cd "C:\Users\Purvi\Desktop\f\biteverse\server"
+PS C:\Users\Purvi\Desktop\f\biteverse\server> Get-Content src\config\db.js
+
+const mongoose = require("mongoose");
+
+async function connectDB() {
+  const uri = process.env.MONGO_URI;
+
+  if (!uri) {
+    throw new Error("MONGO_URI is missing from the server environment");
+  }
+
+  try {
+    await mongoose.connect(uri);
+    console.log("MongoDB connected successfully");
+  } catch (err) {
+    console.error("MongoDB connection failed:", err.message);
+    throw err;
+  }
+}
+
+module.exports = connectDB;
+PS C:\Users\Purvi\Desktop\f\biteverse\server> Get-Content .env | ForEach-Object { ($_ -split "=")[0] }
+PORT
+
+MONGO_URI
+
+CLIENT_ORIGIN
+API_PUBLIC_URL
+
+JWT_SECRET
+COOKIE_NAME
+COOKIE_MAX_AGE_DAYS
+PS C:\Users\Purvi\Desktop\f\biteverse\server>

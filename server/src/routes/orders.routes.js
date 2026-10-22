@@ -24,6 +24,10 @@ function offerDiscount(code, subtotal) {
   return { discount: Math.min(d, subtotal) };
 }
 
+function priceInRupees(m) {
+  return Number(m.priceInr) / 100;
+}
+
 function clean(s) {
   return String(s ?? "").trim();
 }
@@ -78,9 +82,10 @@ router.post("/", optionalAuth, async (req, res) => {
         const m = (r.menu || []).find((x) => String(x._id) === l.menuItemId);
         if (!m) return res.status(400).json({ message: `An item is not on the ${r.name} menu` });
         if (m.available === false) return res.status(400).json({ message: `${m.name} is not available right now` });
-        const lineTotal = m.price * l.qty;
+        const price = priceInRupees(m);
+        const lineTotal = price * l.qty;
         subtotal += lineTotal;
-        priced.push({ menuItemId: m._id, name: m.name, price: m.price, qty: l.qty, lineTotal });
+        priced.push({ menuItemId: m._id, name: m.name, price, qty: l.qty, lineTotal });
       }
 
       const deliveryFee = subtotal >= 249 ? 0 : 40;
@@ -241,8 +246,9 @@ router.post("/quote", async (req, res) => {
         const m = (r.menu || []).find((x) => String(x._id) === l.menuItemId);
         if (!m) return res.status(400).json({ message: `An item is not on the ${r.name} menu` });
         if (m.available === false) return res.status(400).json({ message: `${m.name} is not available right now` });
-        subtotal += m.price * l.qty;
-        priced.push({ id: String(m._id), name: m.name, price: m.price, qty: l.qty, lineTotal: m.price * l.qty });
+        const price = priceInRupees(m);
+        subtotal += price * l.qty;
+        priced.push({ id: String(m._id), name: m.name, price, qty: l.qty, lineTotal: price * l.qty });
       }
 
       const fee = subtotal >= 249 ? 0 : 40;
@@ -285,13 +291,13 @@ router.patch("/track/:code/cancel", async (req, res) => {
     const col = mongoose.connection.db.collection("orders_v2");
     const docs = await col.find({ trackingCode: code }).toArray();
     if (docs.length === 0) return res.status(404).json({ message: "Order not found" });
-    if (docs.some((d) => d.status !== "placed")) {
+    if (docs.some((d) => !["placed", "confirmed"].includes(d.status))) {
       return res.status(400).json({ message: "The restaurant has already started preparing your order, so it cannot be cancelled" });
     }
     const reason = String(req.body?.reason || "Cancelled by customer").slice(0, 120);
     const now = new Date();
     await col.updateMany(
-      { trackingCode: code, status: "placed" },
+      { trackingCode: code, status: { $in: ["placed", "confirmed"] } },
       { $set: { status: "cancelled", cancelReason: reason, updatedAt: now }, $push: { statusHistory: { status: "cancelled", at: now } } }
     );
     res.json({ ok: true, status: "cancelled" });
@@ -302,6 +308,7 @@ router.patch("/track/:code/cancel", async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 

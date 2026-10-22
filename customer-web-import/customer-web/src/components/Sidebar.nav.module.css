@@ -1,108 +1,7 @@
-.root {
-  --sb-accent: #ff7a2b;
-  --sb-ink: #1a0f08;
-
-  box-sizing: border-box;
-  display: flex;
-  flex: 0 0 248px;
-  flex-direction: column;
-  align-self: stretch;
-  width: 248px;
-  min-height: 0;
-  padding: 20px 14px;
-  overflow-y: auto;
-  border-right: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-}
-
-.heading {
-  margin: 0 0 10px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.55;
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-sizing: border-box;
-  width: 100%;
-  height: 46px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 16px;
-  font-weight: 500;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
 .icon {
   flex: 0 0 22px;
   width: 22px;
   height: 22px;
-}
-
-.icon,
-.label {
-  opacity: 0.78;
-  transition: opacity 0.15s ease;
-}
-
-.item:hover {
-  background: color-mix(in srgb, currentColor 8%, transparent);
-}
-
-.item:hover .icon,
-.item:hover .label {
-  opacity: 1;
-}
-
-.item:focus-visible {
-  outline: 2px solid var(--sb-accent);
-  outline-offset: 2px;
-}
-
-.active {
-  background: color-mix(in srgb, var(--sb-accent) 16%, transparent);
-  color: var(--sb-accent);
-}
-
-.active:hover {
-  background: color-mix(in srgb, var(--sb-accent) 20%, transparent);
-}
-
-.active .icon,
-.active .label {
-  opacity: 1;
-}
-
-.active::before {
-  content: "";
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: -10px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--sb-accent);
 }
 
 .badge {
@@ -113,55 +12,13 @@
   margin-left: auto;
   padding: 0 7px;
   border-radius: 999px;
-  background: var(--sb-accent);
-  color: var(--sb-ink);
+  background: #ff7a2b;
+  color: #1a0f08;
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
 }
 
-.promo {
-  position: relative;
-  margin-top: auto;
-  padding: 18px 16px;
-  overflow: hidden;
-  border-radius: 14px;
-  background: var(--sb-accent);
-  color: var(--sb-ink);
-}
-
-.promoText {
-  position: relative;
-  z-index: 1;
-  margin: 0 0 14px;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-.promoBtn {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  padding: 9px 16px;
-  border-radius: 999px;
-  background: var(--sb-ink);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.promoBtn:hover {
-  background: #000;
-}
-
-.promoCircle {
-  position: absolute;
-  right: -22px;
-  bottom: -26px;
-  width: 84px;
-  height: 84px;
-  border: 12px solid rgba(255, 255, 255, 0.22);
-  border-radius: 50%;
+:global(.shell.collapsed) .badge {
+  display: none;
 }

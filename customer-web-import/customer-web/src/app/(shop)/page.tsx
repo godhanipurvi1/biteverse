@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -230,7 +230,7 @@ export default function HomePage() {
       />
 
       <div className={`shell ${collapsed ? "collapsed" : ""}`}>
-        <Sidebar open={navOpen} collapsed={collapsed} onClose={() => setNavOpen(false)} />
+        <Sidebar open={navOpen} collapsed={collapsed} onClose={() => setNavOpen(false)} cartCount={cartCount} />
 
         <main className="main container">
           <section id="top" className="hero">

@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { requireAuth, signToken } = require("../middleware/auth");
@@ -55,7 +55,7 @@ router.post("/login", async (req, res) => {
   try {
     const email = String(req.body?.email ?? "").trim().toLowerCase();
     const password = String(req.body?.password ?? "");
-    const c = email ? await customers().findOne({ email }) : null;
+    const c = email ? await customers().findOne({ $or: [{ email }, { username: email }] }) : null;
     const ok = c && c.passwordHash && (await bcrypt.compare(password, c.passwordHash));
     if (!ok) return res.status(401).json({ message: "Email or password is incorrect" });
     res.json({ token: signToken(c._id), user: publicUser(c) });
@@ -108,3 +108,4 @@ router.post("/google", async (req, res) => {
 });
 
 module.exports = router;
+

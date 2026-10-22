@@ -1,0 +1,47 @@
+﻿.page { min-height: 100vh; background: #120f0d; color: #f5efe9; padding: 20px 16px 80px; box-sizing: border-box; }
+.topbar { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto 20px; }
+.brand { font-weight: 800; font-size: 20px; color: #fff; text-decoration: none; }
+.back { color: #ff7a3d; text-decoration: none; font-size: 14px; }
+.steps { display: flex; flex-wrap: wrap; gap: 16px; list-style: none; padding: 0; margin: 0 auto 28px; max-width: 1100px; font-size: 13px; color: #8d817a; }
+.steps li { display: flex; align-items: center; gap: 8px; }
+.steps li span { width: 22px; height: 22px; border-radius: 50%; background: #2a2320; display: inline-grid; place-items: center; font-size: 12px; }
+.stepActive { color: #f5efe9 !important; }
+.stepActive span { background: #ff7a3d !important; color: #120f0d !important; }
+.layout { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+@media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+.layout h1 { margin: 0 0 16px; font-size: 28px; }
+.card { background: #1d1816; border: 1px solid #2e2622; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+.cardHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.cardHead h3 { margin: 0; font-size: 16px; }
+.muted { color: #8d817a; font-size: 12px; }
+.option { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; background: #120f0d; border: 1px solid #2e2622; border-radius: 12px; padding: 12px; margin-bottom: 8px; color: #f5efe9; cursor: pointer; }
+.optionOn { border-color: #ff7a3d; }
+.option strong { display: block; font-size: 14px; }
+.option small { color: #8d817a; font-size: 12px; }
+.radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #5a4f48; flex-shrink: 0; }
+.optionOn .radio { border-color: #ff7a3d; background: radial-gradient(circle, #ff7a3d 45%, transparent 50%); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip, .chipOn { border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer; border: 1px solid #2e2622; background: #120f0d; color: #c9beb6; }
+.chipOn { background: #f5efe9; color: #120f0d; border-color: #f5efe9; }
+.summary { background: #1d1816; border: 1px solid #2e2622; border-radius: 16px; padding: 18px; position: sticky; top: 20px; }
+.summary h3 { margin: 0 0 12px; font-size: 16px; }
+.groupBlock { margin-bottom: 6px; }
+.groupName { font-weight: 600; font-size: 13px; color: #8d817a; margin: 8px 0 4px; }
+.row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: #c9beb6; padding: 4px 0; }
+.green { color: #7fdc7f; }
+.divider { height: 1px; background: #2e2622; margin: 10px 0; }
+.toPay { display: flex; justify-content: space-between; font-weight: 700; font-size: 16px; border-top: 1px solid #2e2622; margin-top: 8px; padding-top: 12px; }
+.payBtn, .primaryBtn { display: block; width: 100%; text-align: center; background: #ff7a3d; color: #120f0d; font-weight: 700; border: none; border-radius: 12px; padding: 14px; text-decoration: none; cursor: pointer; margin-top: 14px; box-sizing: border-box; }
+.payBtn:disabled { opacity: 0.6; cursor: wait; }
+.primaryBtn { display: inline-block; width: auto; padding: 12px 20px; }
+.note { color: #8d817a; font-size: 12px; text-align: center; margin: 10px 0 0; }
+.editLink { display: block; text-align: center; color: #ff7a3d; font-size: 13px; margin-top: 10px; text-decoration: none; }
+.empty { max-width: 440px; margin: 60px auto; text-align: center; color: #c9beb6; }
+.empty h2 { color: #f5efe9; }
+
+/* Center the text inside the checkout cards */
+.card { text-align: center; }
+.cardHead { justify-content: center; text-align: center; gap: 12px; flex-wrap: wrap; }
+.option { justify-content: center; text-align: center; }
+.option > span:last-child { display: flex; flex-direction: column; align-items: center; }
+.chips { justify-content: center; }

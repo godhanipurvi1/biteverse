@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import { use, useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useRef, useState } from 'react';
 import styles from '../../order-confirmed/order-confirmed.module.css';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000';
@@ -28,6 +28,17 @@ type Tracking = {
 
 const rupees = (n: number) => `₹${Math.round(n)}`;
 
+// What the customer is told when an admin moves an order to a new status.
+const STATUS_TEXT: Record<string, string> = {
+  placed: 'your order was placed',
+  confirmed: 'the restaurant confirmed your order',
+  preparing: 'the kitchen is preparing your food',
+  ready: 'your food is ready and waiting for a rider',
+  out_for_delivery: 'your rider picked up your order',
+  delivered: 'your order was delivered. Enjoy your meal!',
+  cancelled: 'your order was cancelled',
+};
+
 // Admin statuses mapped onto the four customer steps.
 function stageOf(status: string) {
   if (status === 'preparing' || status === 'ready') return 1;
@@ -45,6 +56,33 @@ export default function TrackPage({ params }: { params: Promise<{ code: string }
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
+  const [toast, setToast] = useState<string | null>(null);
+  const [notifPerm, setNotifPerm] = useState<string>('unsupported');
+
+  // Last known status of each order, so we only notify on a real change.
+  const seen = useRef<Record<string, string> | null>(null);
+
+  useEffect(() => {
+    if (typeof Notification !== 'undefined') setNotifPerm(Notification.permission);
+  }, []);
+
+  // Hide the in-page alert after a few seconds.
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const notify = useCallback((message: string) => {
+    setToast(message);
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      try {
+        new Notification('BiteVerse', { body: message });
+      } catch {
+        // some browsers block notifications outside a user gesture; the toast still shows
+      }
+    }
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -54,20 +92,43 @@ export default function TrackPage({ params }: { params: Promise<{ code: string }
         setData(null);
         setError(json.message || 'Order not found');
       } else {
-        setData(json);
+        const tracking = json as Tracking;
+        const current: Record<string, string> = {};
+        for (const o of tracking.orders) current[o.id] = o.status;
+
+        // Compare against the previous poll and announce any change.
+        if (seen.current) {
+          const messages: string[] = [];
+          for (const o of tracking.orders) {
+            const prev = seen.current[o.id];
+            if (prev && prev !== o.status) {
+              messages.push(`${o.restaurantName}: ${STATUS_TEXT[o.status] ?? o.status}`);
+            }
+          }
+          if (messages.length) notify(messages.join(' · '));
+        }
+        seen.current = current;
+
+        setData(tracking);
         setError('');
       }
     } catch {
       setError('Could not reach the server. Retrying…');
     }
     setLoaded(true);
-  }, [code]);
+  }, [code, notify]);
 
   useEffect(() => {
     load();
     const timer = setInterval(load, POLL_MS);
     return () => clearInterval(timer);
   }, [load]);
+
+  async function enableNotifications() {
+    if (typeof Notification === 'undefined') return;
+    const p = await Notification.requestPermission();
+    setNotifPerm(p);
+  }
 
   async function cancelOrder() {
     if (!window.confirm('Cancel this order? This cannot be undone.')) return;
@@ -95,7 +156,7 @@ export default function TrackPage({ params }: { params: Promise<{ code: string }
   const active = orders.filter((o) => o.status !== 'cancelled');
   const cancelled = orders.length > 0 && active.length === 0;
   const stage = active.length ? Math.min(...active.map((o) => stageOf(o.status))) : 0;
-  const canCancel = orders.length > 0 && orders.every((o) => o.status === 'placed');
+  const canCancel = orders.length > 0 && orders.every((o) => o.status === 'placed' || o.status === 'confirmed');
   const subtotal = orders.reduce((n, o) => n + o.subtotal, 0);
   const discount = orders.reduce((n, o) => n + o.discount, 0);
   const fee = orders.reduce((n, o) => n + o.deliveryFee, 0);
@@ -120,6 +181,30 @@ export default function TrackPage({ params }: { params: Promise<{ code: string }
         <Link href="/" className={styles.brand}>BiteVerse</Link>
         <Link href="/" className={styles.back}>Restaurants</Link>
       </div>
+
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#ff7a3d',
+            color: '#120f0d',
+            padding: '12px 18px',
+            borderRadius: 12,
+            fontWeight: 600,
+            fontSize: 14,
+            maxWidth: '90vw',
+            zIndex: 50,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          }}
+        >
+          {toast}
+        </div>
+      )}
 
       {!loaded ? (
         <div className={styles.empty}>Loading your order…</div>
@@ -215,21 +300,33 @@ export default function TrackPage({ params }: { params: Promise<{ code: string }
               <span>{rupees(total)}</span>
             </div>
 
+            {notifPerm === 'default' && (
+              <button type="button" onClick={enableNotifications} className={styles.note} style={{ background: 'none', border: 'none', color: '#ff7a3d', cursor: 'pointer', width: '100%' }}>
+                Turn on browser alerts for status updates
+              </button>
+            )}
+
             {notice && <p className={styles.note}>{notice}</p>}
 
             <div className={styles.actions}>
               <Link href="/" className={styles.ghostBtn}>Back to home</Link>
-              {canCancel ? (
+              {!cancelled && (
                 <button
                   type="button"
                   onClick={cancelOrder}
-                  disabled={busy}
+                  disabled={busy || !canCancel}
                   className={styles.ghostBtn}
-                  style={{ cursor: busy ? 'wait' : 'pointer', color: '#ff7070', borderColor: '#5a2a2a', background: 'none' }}
+                  style={{
+                    cursor: busy || !canCancel ? 'not-allowed' : 'pointer',
+                    color: '#ff7070',
+                    borderColor: '#5a2a2a',
+                    background: 'none',
+                    opacity: canCancel ? 1 : 0.5,
+                  }}
                 >
                   {busy ? 'Cancelling…' : 'Cancel order'}
                 </button>
-              ) : null}
+              )}
             </div>
             {!canCancel && !cancelled && (
               <p className={styles.note}>

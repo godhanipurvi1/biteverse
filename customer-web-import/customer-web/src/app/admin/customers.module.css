@@ -1,0 +1,26 @@
+.view { display: block; }
+.pagehead { margin-bottom: 20px; }
+.pagehead h1 { font-family: var(--display, system-ui); font-size: 28px; margin: 0; letter-spacing: -0.02em; }
+.sub, .muted, .note, .hint { color: var(--muted, #5b6370); }
+.sub { margin: 4px 0 0; }
+.note { font-size: 12px; margin: 12px 4px 0; }
+.err { color: var(--bad, #b3261e); font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat { display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: 16px; border: 1px solid var(--line, #ece6e0); background: var(--surface, #fff); }
+.lbl { color: var(--muted, #5b6370); font-weight: 600; font-size: 14px; }
+.val { font-family: var(--display, system-ui); font-size: 28px; font-weight: 800; }
+.hint { font-size: 13px; }
+.card { border: 1px solid var(--line, #ece6e0); border-radius: 16px; background: var(--surface, #fff); overflow: hidden; }
+.cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 18px; }
+.cardHead h2 { font-family: var(--display, system-ui); font-size: 18px; margin: 0; }
+.search { height: 42px; width: 100%; max-width: 320px; border-radius: 12px; border: 1px solid var(--line, #ece6e0); background: var(--surface-2, #fff6ef); padding: 0 14px; }
+.tw { overflow-x: auto; }
+.tw table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.tw th, .tw td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--line, #ece6e0); vertical-align: middle; }
+.tw th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted, #5b6370); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.mono { font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
+.repeat, .fresh { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+.repeat { background: #dff1e6; color: #1a7f4b; }
+.fresh { background: #e3ebfb; color: #2457c5; }
+.empty { padding: 24px 18px; color: var(--muted, #5b6370); }

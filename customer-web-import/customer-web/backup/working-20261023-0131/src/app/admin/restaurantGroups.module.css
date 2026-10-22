@@ -1,0 +1,21 @@
+﻿.wrap { display: grid; gap: 12px; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 6px; }
+.search { flex: 1 1 260px; height: 46px; padding: 0 18px; border: 1px solid #2f2923; border-radius: 999px; background: #171411; color: #f4efe9; font: inherit; outline: none; }
+.search::placeholder { color: #a79e94; }
+.search:focus { border-color: #ff7a33; }
+
+.group { background: #1b1815; border: 1px solid #2f2923; border-radius: 18px; overflow: hidden; }
+.groupHead { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border: 0; background: transparent; color: #f4efe9; font: inherit; text-align: left; cursor: pointer; }
+.groupHead:hover { background: #241f1a; }
+.brand { font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+.count { margin-left: auto; font-size: 13px; font-weight: 600; color: #a79e94; }
+.caret { width: 26px; height: 26px; border-radius: 50%; background: #3a2314; color: #ffa270; display: grid; place-items: center; font-weight: 700; flex: none; }
+
+.outlets { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 18px; }
+
+.chip { height: 36px; padding: 0 14px; border: 1px solid #2f2923; border-radius: 999px; background: #1b1815; color: #f4efe9; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.chip:hover { border-color: #ff7a33; }
+.chipOn { background: #ff7a33; border-color: #ff7a33; color: #1a0d03; }
+
+.empty { color: #a79e94; text-align: center; padding: 24px 12px; margin: 0; }

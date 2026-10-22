@@ -100,7 +100,7 @@ router.get("/menu", async (req, res) => {
           restaurantId: String(r._id),
           restaurantName: r.name,
           name: m.name,
-          price: m.price,
+          price: (m.priceInr ?? 0) / 100,
           veg: m.veg ?? null,
           available: m.available !== false,
           featured: m.featured === true,

@@ -1,0 +1,31 @@
+.view { display: block; }
+.pagehead { margin-bottom: 20px; }
+.pagehead h1 { font-family: var(--display, system-ui); font-size: 28px; margin: 0; letter-spacing: -0.02em; }
+.sub, .muted, .note { color: var(--muted, #5b6370); }
+.sub { margin: 4px 0 0; }
+.note { font-size: 12px; margin: 14px 0 0; }
+.err { color: var(--bad, #b3261e); font-weight: 600; font-size: 14px; }
+.okMsg { color: var(--ok, #1a7f4b); font-weight: 600; font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--line, #ece6e0); border-radius: 16px; background: var(--surface, #fff); padding: 18px; }
+.card h2 { font-family: var(--display, system-ui); font-size: 18px; margin: 0 0 14px; }
+.avatarRow { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--brand, #e85d0c); color: var(--brand-ink, #fff); display: grid; place-items: center; font-size: 22px; font-weight: 800; }
+.who { display: grid; }
+.who b { font-size: 16px; }
+.formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.wide { grid-column: 1 / -1; }
+@media (max-width: 560px) { .formGrid { grid-template-columns: 1fr; } }
+.field { display: grid; gap: 6px; }
+.lbl { color: var(--muted, #5b6370); font-weight: 600; font-size: 14px; }
+.input { height: 42px; border-radius: 12px; border: 1px solid var(--line, #ece6e0); background: var(--surface-2, #fff6ef); padding: 0 12px; width: 100%; font: inherit; }
+.actions { margin-top: 4px; }
+.btn { height: 42px; padding: 0 18px; border-radius: 12px; border: 0; background: var(--brand, #e85d0c); color: var(--brand-ink, #fff); font-weight: 700; cursor: pointer; }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.toggleRow { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line, #ece6e0); }
+.switch { width: 52px; height: 30px; border-radius: 999px; border: 0; background: var(--line, #d9d4cf); position: relative; cursor: pointer; flex: none; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .15s; }
+.switchOn { background: var(--brand, #e85d0c); }
+.switchOn::after { left: 25px; }
+.switch:disabled { opacity: .5; cursor: wait; }
+.empty { padding: 24px 18px; color: var(--muted, #5b6370); }
