@@ -16,6 +16,7 @@ app.use("/api/health", healthRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/offers", offerRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/favorites", require("./routes/favorites.routes"));
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", require("./routes/admin.routes"));
 

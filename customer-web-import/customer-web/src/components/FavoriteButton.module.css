@@ -1,0 +1,41 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #1f6b4a;
+  background: transparent;
+  color: #1f6b4a;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.button[aria-pressed="true"] {
+  background: #1f6b4a;
+  color: #fff;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.button:focus-visible {
+  outline: 2px solid #1f6b4a;
+  outline-offset: 2px;
+}
+
+.link {
+  color: #1f6b4a;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #b42318;
+  font-size: 0.85rem;
+}

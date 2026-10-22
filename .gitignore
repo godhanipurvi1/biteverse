@@ -10,3 +10,10 @@ playwright-report/
 test-results/
 
 *.tsbuildinfo
+
+# Local secrets and generated files
+.env
+.env.*
+node_modules/
+.next/
+*.bak*

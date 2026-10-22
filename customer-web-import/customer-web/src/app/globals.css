@@ -397,3 +397,18 @@ input { font: inherit; }
 
 /* google button */
 .auth-google-wrap { display: flex; justify-content: center; min-height: 44px; }
+
+/* Center the cart drawer buttons */
+.cart-panel .checkout,
+.cart-panel .view-cart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  white-space: nowrap;
+  overflow: visible;
+  text-indent: 0;
+}

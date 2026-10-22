@@ -1,180 +1,247 @@
-"use client";
+﻿'use client';
 
-import { useEffect, useState } from "react";
-import { useCart, saveCart, groupByRestaurant, cartSubtotalOf, cartDeliveryFeeOf } from "../../lib/cart";
-import { getToken } from "../../lib/auth";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import styles from './checkout.module.css';
+import { saveCart } from '../../lib/cart';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-const RUPEE = "\u20B9";
+const CART_KEY = 'biteverse-cart';
+const COUPON_KEY = 'biteverse-coupon';
+const ORDER_KEY = 'biteverse-last-order';
+const FREE_DELIVERY_OVER = 249;
+const DELIVERY_FEE = 40;
+const PACKING_CHARGE = 15;
+const COUPONS: Record<string, { percent: number; maxOff: number }> = {
+  WELCOME10: { percent: 10, maxOff: 100 },
+};
+const INSTRUCTIONS = ['Leave at the door', 'Call on arrival', 'Ring the bell'];
 
-type Payment = "upi" | "card" | "cod";
-const PAYMENTS: { value: Payment; label: string }[] = [
-  { value: "upi", label: "UPI" },
-  { value: "card", label: "Card" },
-  { value: "cod", label: "Cash on delivery" },
-];
+type CartLine = {
+  id: string;
+  name: string;
+  price: number;
+  qty: number;
+  restaurantId: string;
+  restaurantName: string;
+};
+
+type Group = { id: string; name: string; items: CartLine[]; subtotal: number };
+type Method = 'upi' | 'card' | 'cod';
+
+// Same reader as the cart page: accepts an array or an object with a `lines` array.
+function readCart(): CartLine[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CART_KEY) ?? 'null');
+    if (Array.isArray(raw)) return raw as CartLine[];
+    if (raw && Array.isArray(raw.lines)) return raw.lines as CartLine[];
+  } catch {
+    // unreadable storage: treat as empty
+  }
+  return [];
+}
+
+const rupees = (n: number) => `₹${Math.round(n)}`;
 
 export default function CheckoutPage() {
-  const cart = useCart();
-  const groups = groupByRestaurant(cart);
-  const subtotal = cartSubtotalOf(cart);
-  const fee = cartDeliveryFeeOf(cart);
-  const total = subtotal + fee;
+  const router = useRouter();
+  const [lines, setLines] = useState<CartLine[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [coupon, setCoupon] = useState<string | null>(null);
+  const [address, setAddress] = useState<'home' | 'work'>('home');
+  const [instruction, setInstruction] = useState(INSTRUCTIONS[0]);
+  const [method, setMethod] = useState<Method>('upi');
+  const [placing, setPlacing] = useState(false);
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [payment, setPayment] = useState<Payment>("cod");
-  const [coupon, setCoupon] = useState("");
-  useEffect(() => { setCoupon(window.localStorage.getItem("biteverse-coupon") ?? ""); }, []);
-  const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [placed, setPlaced] = useState<{ id: string; restaurantName: string; total: number }[] | null>(null);
-
-  async function placeOrder() {
-    setMessage("");
-    if (!cart || cart.lines.length === 0) {
-      setMessage("Your cart is empty.");
-      return;
-    }
-    if (!name.trim() || phone.replace(/\D/g, "").length < 10 || !address.trim()) {
-      setMessage("Please enter your name, a 10-digit phone number and a delivery address.");
-      return;
-    }
-    setBusy(true);
+  useEffect(() => {
+    setLines(readCart());
     try {
-      const res = await fetch(`${API_URL}/api/orders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(getToken() ? { Authorization: "Bearer " + getToken() } : {}) },
-        body: JSON.stringify({
-          customer: { name: name.trim(), phone: phone.trim(), address: address.trim() },
-          payment,
-          couponCode: coupon.trim() || undefined,
-          items: cart.lines.map((l) => ({ menuItemId: l.id, restaurantId: l.restaurantId, qty: l.qty })),
-        }),
-      });
-      if (res.status === 404) {
-        setMessage("Order service not set up yet. Nothing was placed or charged.");
-        return;
-      }
-      if (!res.ok) {
-        const err = (await res.json().catch(() => ({}))) as { message?: string };
-        setMessage(err.message ?? "Could not place the order. Please try again.");
-        return;
-      }
-      const data = (await res.json()) as { orders: { id: string; restaurantName: string; total: number }[] };
-      saveCart(null);
-      window.localStorage.removeItem("biteverse-coupon");
-      setPlaced(data.orders);
+      const saved = localStorage.getItem(COUPON_KEY);
+      if (saved && COUPONS[saved]) setCoupon(saved);
     } catch {
-      setMessage("Could not reach the server. Check that the backend is running on port 5000.");
-    } finally {
-      setBusy(false);
+      // ignore
     }
-  }
+    setLoaded(true);
+  }, []);
 
-  if (placed) {
-    return (
-      <main className="container" style={{ padding: "40px 16px", maxWidth: 720 }}>
-        <h1>Order placed</h1>
-        {placed.map((o) => (
-          <div key={o.id} style={{ border: "1px solid #ddd", borderRadius: 10, padding: 12, marginBottom: 12 }}>
-            <strong>{o.restaurantName}</strong>
-            <div>Total {RUPEE}{o.total}</div>
-            <div style={{ fontSize: 13, opacity: 0.7 }}>Order ID: {o.id}</div>
-            <a href={`/orders/${o.id}`} style={{ fontSize: 14 }}>Track order</a>
-          </div>
-        ))}
-        <p style={{ fontSize: 13, opacity: 0.7 }}>This is a test build. Nothing is charged.</p>
-        <a href="/">Back to home</a>
-      </main>
-    );
-  }
+  const groups = useMemo<Group[]>(() => {
+    const map = new Map<string, Group>();
+    for (const l of lines) {
+      const g = map.get(l.restaurantId) ?? { id: l.restaurantId, name: l.restaurantName, items: [], subtotal: 0 };
+      g.items.push(l);
+      g.subtotal += l.price * l.qty;
+      map.set(l.restaurantId, g);
+    }
+    return Array.from(map.values());
+  }, [lines]);
 
-  if (!cart || cart.lines.length === 0) {
-    return (
-      <main className="container" style={{ padding: "40px 16px" }}>
-        <h1>Checkout</h1>
-        <p>Your cart is empty.</p>
-        <a href="/#restaurants">Browse restaurants</a>
-      </main>
-    );
+  const itemTotal = groups.reduce((s, g) => s + g.subtotal, 0);
+  const deliveryFee = groups.reduce((s, g) => s + (g.subtotal >= FREE_DELIVERY_OVER ? 0 : DELIVERY_FEE), 0);
+  const packing = groups.length * PACKING_CHARGE;
+  const rule = coupon ? COUPONS[coupon] : null;
+  const discount = rule ? Math.min(Math.round((itemTotal * rule.percent) / 100), rule.maxOff) : 0;
+  const toPay = itemTotal - discount + deliveryFee + packing;
+
+  function placeOrder() {
+    if (placing || lines.length === 0) return;
+    setPlacing(true);
+    const orderId = `BV-${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      localStorage.setItem(
+        ORDER_KEY,
+        JSON.stringify({
+          orderId,
+          total: toPay,
+          method,
+          address,
+          instruction,
+          coupon,
+          restaurants: groups.map((g) => g.name),
+          items: lines,
+          createdAt: new Date().toISOString(),
+        })
+      );
+      saveCart(null);
+      localStorage.removeItem(COUPON_KEY);
+    } catch {
+      // storage unavailable: the order page will show a generic message
+    }
+    router.push(`/order-confirmed?order=${orderId}`);
   }
 
   return (
-    <main className="container" style={{ padding: "24px 16px", maxWidth: 720 }}>
-      <h1>Checkout</h1>
+    <main className={styles.page}>
+      <div className={styles.topbar}>
+        <Link href="/" className={styles.brand}>BiteVerse</Link>
+        <Link href="/cart" className={styles.back}>← Back to cart</Link>
+      </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <h2>Your order</h2>
-        {groups.map((g) => (
-          <div key={g.restaurantId} style={{ border: "1px solid #ddd", borderRadius: 10, padding: 12, marginBottom: 12 }}>
-            <strong>{g.restaurantName}</strong>
-            <ul style={{ listStyle: "none", padding: 0, margin: "8px 0" }}>
-              {g.lines.map((l) => (
-                <li key={l.id} style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span>{l.qty} x {l.name}</span>
-                  <span>{RUPEE}{l.qty * l.price}</span>
-                </li>
-              ))}
-            </ul>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Subtotal</span>
-              <span>{RUPEE}{g.subtotal}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Delivery {g.fee === 0 ? "(free)" : ""}</span>
-              <span>{RUPEE}{g.fee}</span>
-            </div>
-          </div>
-        ))}
-        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
-          <span>Total (estimate)</span>
-          <span>{RUPEE}{total}</span>
+      <ol className={styles.steps}>
+        <li><span>✓</span> Cart</li>
+        <li className={styles.stepActive}><span>2</span> Address and payment</li>
+        <li><span>3</span> Confirmed</li>
+      </ol>
+
+      {!loaded ? (
+        <div className={styles.empty}>Loading checkout…</div>
+      ) : lines.length === 0 ? (
+        <div className={styles.empty}>
+          <h2>Nothing to check out</h2>
+          <p>Your cart is empty.</p>
+          <Link href="/" className={styles.primaryBtn}>Browse restaurants</Link>
         </div>
-        <p style={{ fontSize: 13, opacity: 0.7 }}>
-          Delivery is Rs 40 per restaurant, free at Rs 249 or more. The final amount is calculated by the server when the order is placed.
-        </p>
-      </section>
+      ) : (
+        <div className={styles.layout}>
+          <section>
+            <h1>Address and payment</h1>
 
-      <section style={{ display: "grid", gap: 12, marginBottom: 24 }}>
-        <h2>Delivery details</h2>
-        <label>
-          Name
-          <input value={name} onChange={(e) => setName(e.target.value)} style={{ display: "block", width: "100%", padding: 8 }} />
-        </label>
-        <label>
-          Phone
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" style={{ display: "block", width: "100%", padding: 8 }} />
-        </label>
-        <label>
-          Delivery address
-          <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} style={{ display: "block", width: "100%", padding: 8 }} />
-        </label>
-      </section>
+            <div className={styles.card}>
+              <div className={styles.cardHead}>
+                <h3>Delivery address</h3>
+              </div>
+              {(['home', 'work'] as const).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`${styles.option} ${address === key ? styles.optionOn : ''}`}
+                  onClick={() => setAddress(key)}
+                  aria-pressed={address === key}
+                >
+                  <span className={styles.radio} />
+                  <span>
+                    <strong>{key === 'home' ? 'Home' : 'Work'}</strong>
+                    <small>{key === 'home' ? 'House number, street, area' : 'Office address'}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
 
-      <section style={{ display: "grid", gap: 12, marginBottom: 24 }}>
-        <h2>Payment</h2>
-        {PAYMENTS.map((p) => (
-          <label key={p.value} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <input type="radio" name="payment" value={p.value} checked={payment === p.value} onChange={() => setPayment(p.value)} />
-            {p.label}
-          </label>
-        ))}
-        <p style={{ fontSize: 13, opacity: 0.7 }}>Nothing is charged. This is a test build.</p>
-      </section>
+            <div className={styles.card}>
+              <div className={styles.cardHead}>
+                <h3>Delivery instructions</h3>
+                <span className={styles.muted}>Optional</span>
+              </div>
+              <div className={styles.chips}>
+                {INSTRUCTIONS.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={instruction === t ? styles.chipOn : styles.chip}
+                    onClick={() => setInstruction(t)}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      <section style={{ display: "grid", gap: 12, marginBottom: 24 }}>
-        <h2>Offer code</h2>
-        <input value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="e.g. WELCOME20" style={{ padding: 8 }} />
-        <p style={{ fontSize: 13, opacity: 0.7 }}>The code is checked by the server when you place the order.</p>
-      </section>
+            <div className={styles.card}>
+              <div className={styles.cardHead}>
+                <h3>Payment method</h3>
+                <span className={styles.muted}>All payments are secure</span>
+              </div>
+              {([
+                ['upi', 'UPI', 'Pay with any UPI app'],
+                ['card', 'Credit or debit card', 'Visa, Mastercard, RuPay'],
+                ['cod', 'Cash on delivery', 'Pay when your order arrives'],
+              ] as const).map(([key, label, sub]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`${styles.option} ${method === key ? styles.optionOn : ''}`}
+                  onClick={() => setMethod(key)}
+                  aria-pressed={method === key}
+                >
+                  <span className={styles.radio} />
+                  <span>
+                    <strong>{label}</strong>
+                    <small>{sub}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
 
-      {message && <p role="status" style={{ fontWeight: 600, marginBottom: 12 }}>{message}</p>}
+          <aside className={styles.summary}>
+            <h3>Order summary</h3>
+            {groups.map((g) => (
+              <div key={g.id} className={styles.groupBlock}>
+                {groups.length > 1 && <div className={styles.groupName}>{g.name}</div>}
+                {g.items.map((l) => (
+                  <div key={l.id} className={styles.row}>
+                    <span>{l.name} × {l.qty}</span>
+                    <span>{rupees(l.price * l.qty)}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
 
-      <button type="button" onClick={placeOrder} disabled={busy} style={{ padding: "12px 20px", fontWeight: 700, width: "100%" }}>
-        {busy ? "Placing order..." : "Place order"}
-      </button>
+            <div className={styles.divider} />
+            <div className={styles.row}><span>Item total</span><span>{rupees(itemTotal)}</span></div>
+            {discount > 0 && (
+              <div className={`${styles.row} ${styles.green}`}>
+                <span>Coupon {coupon}</span><span>−{rupees(discount)}</span>
+              </div>
+            )}
+            <div className={styles.row}><span>Delivery fee</span><span>{deliveryFee === 0 ? 'FREE' : rupees(deliveryFee)}</span></div>
+            <div className={styles.row}><span>Packing charge</span><span>{rupees(packing)}</span></div>
+
+            <div className={styles.toPay}>
+              <span>To pay</span>
+              <span>{rupees(toPay)}</span>
+            </div>
+
+            <button type="button" className={styles.payBtn} onClick={placeOrder} disabled={placing}>
+              {placing ? 'Placing order…' : `Pay ${rupees(toPay)}`}
+            </button>
+            <p className={styles.note}>
+              {method === 'cod' ? 'You will pay in cash when your order arrives.' : 'You will confirm the payment in the next step.'}
+            </p>
+            <Link href="/cart" className={styles.editLink}>Edit cart</Link>
+          </aside>
+        </div>
+      )}
     </main>
   );
 }
+

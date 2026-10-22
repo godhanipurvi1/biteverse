@@ -6,10 +6,10 @@ import Icon, { type IconName } from "./Icon";
 type Item = { label: string; href: string; icon: IconName };
 
 const ITEMS: Item[] = [
-  { label: "Home", href: "#top", icon: "home" },
-  { label: "Restaurants", href: "#restaurants", icon: "store" },
-  { label: "Offers", href: "#offers", icon: "tag" },
-  { label: "Live tracking", href: "#tracking", icon: "bike" },
+  { label: "Home", href: "/#top", icon: "home" },
+  { label: "Restaurants", href: "/#restaurants", icon: "store" },
+  { label: "Offers", href: "/#offers", icon: "tag" },
+  { label: "Live tracking", href: "/#tracking", icon: "bike" },
 ];
 
 type Props = {
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export default function Sidebar({ open, collapsed, onClose }: Props) {
-  const [active, setActive] = useState("#top");
+  const [active, setActive] = useState("/#top");
 
   return (
     <>
@@ -54,7 +54,7 @@ export default function Sidebar({ open, collapsed, onClose }: Props) {
         </nav>
         <div className="promo">
           <p>Hungry right now? Your last order can be tracked live.</p>
-          <a href="#tracking">Track order</a>
+          <a href="/#tracking">Track order</a>
           <span className="ring" aria-hidden="true" />
         </div>
       </aside>

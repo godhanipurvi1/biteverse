@@ -47,6 +47,7 @@ router.patch("/orders/:id/status", async (req, res) => {
     const _id = new ObjectId(req.params.id);
     const order = await db().collection("orders_v2").findOne({ _id });
     if (!order) return res.status(404).json({ message: "Order not found" });
+    if (order.status === "cancelled") return res.status(400).json({ message: "This order is cancelled" });
     const i = FLOW.indexOf(order.status);
     const next = FLOW[i + 1];
     if (!next || req.body?.status !== next) {
@@ -159,3 +160,6 @@ router.get("/stats", async (req, res) => {
 });
 
 module.exports = router;
+
+
+

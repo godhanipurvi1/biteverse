@@ -1,4 +1,5 @@
-const express = require("express");
+﻿const express = require("express");
+const crypto = require("crypto");
 const { requireAuth, optionalAuth } = require("../middleware/auth");
 const mongoose = require("mongoose");
 
@@ -7,11 +8,11 @@ const { ObjectId } = mongoose.Types;
 
 const PAYMENTS = ["upi", "card", "cod"];
 const MAX_QTY = 50;
+const TRACK_CODE = /^[A-Za-z0-9_-]{12}$/;
 
 // Offer rules in rupees. Replace with a read from the offers collection once its fields are confirmed.
 const OFFERS = {
-  WELCOME20: { type: "percent", value: 20, max: 100, min: 200 },
-  FLAT50: { type: "fixed", value: 50, min: 300 },
+  WELCOME10: { type: "percent", value: 10, max: 100, min: 200 },
 };
 
 function offerDiscount(code, subtotal) {
@@ -46,7 +47,6 @@ router.post("/", optionalAuth, async (req, res) => {
       return res.status(400).json({ message: "Your cart is empty" });
     }
 
-    // Group the requested lines by restaurant, checking each one.
     const grouped = new Map();
     for (const it of body.items) {
       const qty = Number(it.qty);
@@ -64,6 +64,8 @@ router.post("/", optionalAuth, async (req, res) => {
     const restaurants = mongoose.connection.db.collection("restaurants");
     const now = new Date();
     const groupId = new ObjectId();
+    // One tracking code per checkout, shared by every restaurant's order in it.
+    const trackingCode = crypto.randomBytes(9).toString("base64url");
     const orderDocs = [];
 
     for (const [restaurantId, lines] of grouped) {
@@ -97,6 +99,7 @@ router.post("/", optionalAuth, async (req, res) => {
       orderDocs.push({
         _id: new ObjectId(),
         groupId,
+        trackingCode,
         restaurantId: r._id,
         restaurantName: r.name,
         items: priced,
@@ -119,6 +122,7 @@ router.post("/", optionalAuth, async (req, res) => {
 
     res.status(201).json({
       groupId: String(groupId),
+      trackingCode,
       orders: orderDocs.map((o) => ({
         id: String(o._id),
         restaurantName: o.restaurantName,
@@ -129,6 +133,44 @@ router.post("/", optionalAuth, async (req, res) => {
   } catch (err) {
     console.error("POST /api/orders failed:", err);
     res.status(500).json({ message: "Could not place the order" });
+  }
+});
+
+// GET /api/orders/track/:code : public tracking page. Returns no phone number or address.
+router.get("/track/:code", async (req, res) => {
+  try {
+    const code = String(req.params.code || "");
+    if (!TRACK_CODE.test(code)) return res.status(404).json({ message: "Order not found" });
+    const docs = await mongoose.connection.db
+      .collection("orders_v2")
+      .find({ trackingCode: code })
+      .sort({ createdAt: 1 })
+      .toArray();
+    if (docs.length === 0) return res.status(404).json({ message: "Order not found" });
+
+    const first = docs[0];
+    const updatedAt = docs.reduce((latest, d) => (d.updatedAt > latest ? d.updatedAt : latest), first.updatedAt);
+    res.json({
+      trackingCode: code,
+      createdAt: first.createdAt,
+      updatedAt,
+      payment: first.payment,
+      couponCode: docs.find((d) => d.couponCode)?.couponCode ?? null,
+      orders: docs.map((d) => ({
+        id: String(d._id),
+        restaurantName: d.restaurantName,
+        items: d.items.map((i) => ({ name: i.name, qty: i.qty, price: i.price, lineTotal: i.lineTotal })),
+        subtotal: d.subtotal,
+        discount: d.discount,
+        deliveryFee: d.deliveryFee,
+        total: d.total,
+        status: d.status,
+        statusHistory: d.statusHistory,
+      })),
+    });
+  } catch (err) {
+    console.error("GET /api/orders/track failed:", err.message);
+    res.status(500).json({ message: "Could not load the order" });
   }
 });
 
@@ -235,4 +277,32 @@ router.post("/quote", async (req, res) => {
   }
 });
 
+// PATCH /api/orders/track/:code/cancel : customer cancels while the restaurant has not started preparing.
+router.patch("/track/:code/cancel", async (req, res) => {
+  try {
+    const code = String(req.params.code || "");
+    if (!TRACK_CODE.test(code)) return res.status(404).json({ message: "Order not found" });
+    const col = mongoose.connection.db.collection("orders_v2");
+    const docs = await col.find({ trackingCode: code }).toArray();
+    if (docs.length === 0) return res.status(404).json({ message: "Order not found" });
+    if (docs.some((d) => d.status !== "placed")) {
+      return res.status(400).json({ message: "The restaurant has already started preparing your order, so it cannot be cancelled" });
+    }
+    const reason = String(req.body?.reason || "Cancelled by customer").slice(0, 120);
+    const now = new Date();
+    await col.updateMany(
+      { trackingCode: code, status: "placed" },
+      { $set: { status: "cancelled", cancelReason: reason, updatedAt: now }, $push: { statusHistory: { status: "cancelled", at: now } } }
+    );
+    res.json({ ok: true, status: "cancelled" });
+  } catch (err) {
+    console.error("PATCH /api/orders/track/:code/cancel failed:", err.message);
+    res.status(500).json({ message: "Could not cancel the order" });
+  }
+});
+
 module.exports = router;
+
+
+
+
