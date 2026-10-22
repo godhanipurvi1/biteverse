@@ -14,6 +14,7 @@ import CartPanel from "../../components/CartPanel";
 import { setRestaurantCache } from "../../lib/restaurantCache";
 import { useCart, saveCart, changeQty, groupByRestaurant, cartDeliveryFeeOf } from "../../lib/cart";
 import MenuSheet from "../../components/MenuSheet";
+import { setCuisineImages, getCuisineImage } from "@/lib/cuisine-image";
 
 type Diet = "all" | "veg" | "nonveg";
 
@@ -108,6 +109,7 @@ export default function HomePage() {
   const [collapsed, setCollapsed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const cart = useCart();
+  useMemo(() => setCuisineImages(restaurants), [restaurants]);
   const router = useRouter();
   const [cartOpen, setCartOpen] = useState(false);
   const [menuFor, setMenuFor] = useState<Restaurant | null>(null);
@@ -409,22 +411,28 @@ type CardProps = {
   onOpenMenu: () => void;
 };
 
+const RESTAURANT_PHOTOS = ["burger-lab", "dosa-corner", "spice-route"];
+
 function RestaurantCard({ restaurant: r, tint, isFav, onToggleFav, onOpenMenu }: CardProps) {
   const cuisines = (r.categories ?? []).map(labelFor).join(", ") || "Cuisine not set";
   const time = deliveryText(r.deliveryMinutes);
   const cost = r.costForTwo ? `\u20B9${r.costForTwo} for two` : null;
+  const slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const hasPhoto = RESTAURANT_PHOTOS.includes(slug);
 
+  const image = getCuisineImage(r);
   return (
     <article className="rc" onClick={onOpenMenu} style={{ cursor: "pointer" }}>
       <div className="art" style={{ background: tint }}>
         <span className="initial">{r.name.charAt(0).toUpperCase()}</span>
-        <img
-          className="photo"
-          src={`/images/restaurants/${r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.jpg`}
-          alt={r.name}
-          loading="lazy"
-          onError={(e) => { const el = e.currentTarget; if (el.src.endsWith(".jpg")) el.src = el.src.replace(/\.jpg$/, ".svg"); else el.style.display = "none"; }}
-        />
+        {true && (
+          <img
+            className="photo"
+            src={image}
+            alt={r.name}
+            loading="lazy"
+          />
+        )}
         <button
           type="button"
           className="fav"
