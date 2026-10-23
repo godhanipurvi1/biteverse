@@ -1,0 +1,28 @@
+﻿.layout { display: grid; gap: 20px; align-items: start; }
+.main { display: grid; gap: 16px; min-width: 0; }
+.panel { padding: 20px; margin: 0; min-width: 0; }
+.panelTitle { font-family: var(--display); font-size: 20px; font-weight: 800; margin: 0 0 14px; padding: 0; }
+.item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding: 14px 0; }
+.item + .item { border-top: 1px solid var(--line); }
+.itemName { font-weight: 700; }
+.itemMeta { font-size: 14px; color: var(--muted); }
+.stepper { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 4px; margin-top: 8px; }
+.stepper button { width: 32px; height: 32px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 700; font-size: 16px; }
+.stepper span { min-width: 28px; text-align: center; font-weight: 700; }
+.lineTotal { font-weight: 700; white-space: nowrap; }
+.fields { display: grid; gap: 12px; }
+.field { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+.field input, .field textarea { font: 500 15px var(--body); color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; width: 100%; }
+.options { display: grid; gap: 10px; }
+.option { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; font-weight: 600; }
+.option[data-on="true"] { border-color: var(--brand); background: var(--brand-soft); }
+.summary { position: sticky; top: calc(var(--tb) + 16px); padding: 20px; display: grid; gap: 12px; margin: 0; }
+.row { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+.total { font-weight: 800; font-size: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+.placeBtn { width: 100%; }
+.notice { font-size: 14px; color: var(--muted); margin: 0; }
+.empty { padding: 48px 24px; text-align: center; display: grid; justify-items: center; gap: 12px; }
+.emptyIcon { width: 128px; height: 128px; border-radius: 50%; background: var(--brand-soft); display: grid; place-items: center; margin-bottom: 8px; }
+@media (min-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; }
+}
