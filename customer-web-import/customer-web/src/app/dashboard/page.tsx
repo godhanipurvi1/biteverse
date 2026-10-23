@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -18,7 +18,10 @@ import {
   type Order,
 } from "../../lib/orders";
 import { fetchFavorites, setFavorite, type FavoriteRestaurant } from "../../lib/favorites";
+import { DashboardCart } from "../../components/dashboard-cart";
 import styles from "./dashboard.module.css";
+
+const DOT = "\u00B7";
 
 const PATHS = {
   grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
@@ -328,7 +331,7 @@ export default function DashboardPage() {
         <section className={styles.track}>
           <div>
             <p className={styles.trackSub}>
-              {active.restaurantName ?? "Your order"} · #{shortId(active._id)}
+              {active.restaurantName ?? "Your order"} {DOT} #{shortId(active._id)}
             </p>
             <h2 className={styles.trackTitle}>{STEP_LABELS[activeStatus] ?? activeStatus}</h2>
             <Link href={`/orders/${active._id}`} className={styles.cta}>
@@ -340,6 +343,8 @@ export default function DashboardPage() {
           </div>
         </section>
       )}
+
+      <DashboardCart />
 
       <div className={styles.columns}>
         <section>
@@ -363,7 +368,7 @@ export default function DashboardPage() {
                       <span>
                         <strong>{o.restaurantName ?? "Restaurant"}</strong>
                         <span className={styles.meta}>
-                          {formatWhen(o.createdAt)} · #{shortId(o._id)}
+                          {formatWhen(o.createdAt)} {DOT} #{shortId(o._id)}
                         </span>
                       </span>
                       <span className={styles.rowRight}>
