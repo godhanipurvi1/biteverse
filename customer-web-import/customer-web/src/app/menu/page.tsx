@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -80,6 +80,7 @@ export default function MenuPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,7 +118,18 @@ export default function MenuPage() {
 
   useEffect(() => {
     setLimit(PAGE_SIZE);
-  }, [cuisine, vegOnly, q]);
+  }, [cuisine, vegOnly, q, restaurantId]);
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("restaurant");
+    if (id) setRestaurantId(id);
+  }, []);
+
+  function pickRestaurant(id: string | null) {
+    setRestaurantId(id);
+    if (id) setCuisine("all");
+    window.history.replaceState(null, "", id ? `/menu?restaurant=${id}` : "/menu");
+  }
 
   function onMenu() {
     if (window.matchMedia(DESKTOP).matches) setCollapsed((c) => !c);
@@ -134,7 +146,9 @@ export default function MenuPage() {
     const needle = q.trim().toLowerCase();
     const out: { dish: Dish; restaurant: Restaurant }[] = [];
     for (const r of restaurants) {
-      if (cuisine !== "all" && !(r.categories ?? []).includes(cuisine)) continue;
+      if (restaurantId) {
+        if (r._id !== restaurantId) continue;
+      } else if (cuisine !== "all" && !(r.categories ?? []).includes(cuisine)) continue;
       for (const d of r.menu ?? []) {
         if (vegOnly && d.veg !== true) continue;
         if (needle && !d.name.toLowerCase().includes(needle) && !r.name.toLowerCase().includes(needle)) continue;
@@ -142,9 +156,19 @@ export default function MenuPage() {
       }
     }
     return out;
-  }, [restaurants, cuisine, vegOnly, q]);
+  }, [restaurants, cuisine, vegOnly, q, restaurantId]);
 
   const shown = rows.slice(0, limit);
+  const selected = restaurantId ? restaurants.find((r) => r._id === restaurantId) : undefined;
+
+  const barRestaurants = useMemo(
+    () => {
+      const list = restaurants.filter((r) => cuisine === "all" || (r.categories ?? []).includes(cuisine)).slice(0, 40);
+      const sel = restaurantId ? restaurants.find((r) => r._id === restaurantId) : undefined;
+      return sel && !list.some((r) => r._id === sel._id) ? [sel, ...list] : list;
+    },
+    [restaurants, cuisine, restaurantId]
+  );
 
   const qtyOf = (dishId: string, restaurantId: string) =>
     cart?.lines.find((l) => l.id === dishId && l.restaurantId === restaurantId)?.qty ?? 0;
@@ -163,7 +187,7 @@ export default function MenuPage() {
 
         <main className="main container">
           <div className={styles.page}>
-            <h1 className={menuStyles.title}>Menu</h1>
+            <h1 className={menuStyles.title}>{selected ? selected.name : "Menu"}</h1>
 
             {status === "loading" && <p className={styles.note}>Loading dishes...</p>}
             {status === "error" && (
@@ -172,6 +196,17 @@ export default function MenuPage() {
 
             {status === "ready" && (
               <>
+                <nav className={menuStyles.restaurantBar} aria-label="Restaurants">
+                  <a className={restaurantId ? menuStyles.restaurantChip : `${menuStyles.restaurantChip} ${menuStyles.restaurantChipOn}`} href="/menu" onClick={(e) => { e.preventDefault(); pickRestaurant(null); }}>
+                    All restaurants
+                  </a>
+                  {barRestaurants.map((r) => (
+                    <a key={r._id} className={restaurantId === r._id ? `${menuStyles.restaurantChip} ${menuStyles.restaurantChipOn}` : menuStyles.restaurantChip} href={`/menu?restaurant=${r._id}`} onClick={(e) => { e.preventDefault(); pickRestaurant(r._id); }}>
+                      {r.name}
+                    </a>
+                  ))}
+                </nav>
+
                 <div className={menuStyles.controls}>
                   <div className={styles.search}>
                     <input
@@ -278,10 +313,10 @@ export default function MenuPage() {
       </div>
 
       {cartCount > 0 && (
-        <div className={styles.cartBar}>
-          <span>{`${cartCount} item${cartCount === 1 ? "" : "s"} \u00B7 \u20B9${cartSubtotal}`}</span>
+        <div className={menuStyles.menuCartBar}>
+          <span className={menuStyles.menuCartInfo}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5" /><circle cx="18" cy="20" r="1.5" /><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6" /></svg>{`${cartCount} item${cartCount === 1 ? "" : "s"} \u00B7 \u20B9${cartSubtotal}`}</span>
           <button type="button" onClick={() => router.push("/cart")}>
-            View cart
+            View cart <span aria-hidden="true">&rarr;</span>
           </button>
         </div>
       )}
