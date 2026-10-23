@@ -1,300 +1,257 @@
-﻿'use client';
+﻿"use client";
 
-import Footer from '../../components/Footer';
-import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { useCart, changeQty, removeLine, groupByRestaurant } from '../../lib/cart';
-import styles from './cart.module.css';
+import { useEffect, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { API_URL, TOKEN_KEY } from "../../lib/orders";
+import {
+  useCart,
+  changeQty,
+  removeLine,
+  groupByRestaurant,
+  cartCountOf,
+  cartSubtotalOf,
+  cartDeliveryFeeOf,
+} from "../../lib/cart";
+import shell from "../dashboard/dashboard.module.css";
+import styles from "./cart.module.css";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000';
-const COUPON_KEY = 'biteverse-coupon';
-const OFFER_CODES = ['WELCOME10'];
+const RUPEE = "\u20B9";
+const money = (n: number) => `${RUPEE}${Math.round(n)}`;
 
-type Quote = {
-  subtotal: number;
-  discount: number;
-  fee: number;
-  tax?: number;
-  total: number;
-  couponApplied: string | null;
-  couponMessage?: string;
+const PATHS = {
+  grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+  store: "M4 9l1.5-5h13L20 9M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9zM5 13v7h14v-7",
+  receipt: "M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6",
+  heart: "M12 20s-7-4.6-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.4-7 10-7 10z",
+  cart: "M3 4h2l2.4 11h10.2L20 7H6.2M9 20h.01M17 20h.01",
+  menu: "M4 7h16M4 12h16M4 17h16",
+  search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-4.3-4.3",
 };
+type IconName = keyof typeof PATHS;
 
-const rupees = (n: number) => `₹${Math.round(n)}`;
+const NAV: { key: string; href: string; label: string; icon: IconName }[] = [
+  { key: "dashboard", href: "/dashboard", label: "Dashboard", icon: "grid" },
+  { key: "restaurants", href: "/#restaurants", label: "Restaurants", icon: "store" },
+  { key: "orders", href: "/orders", label: "My orders", icon: "receipt" },
+  { key: "favorites", href: "/favourites", label: "Favourites", icon: "heart" },
+  { key: "cart", href: "/cart", label: "Cart", icon: "cart" },
+];
 
-function emojiFor(name: string) {
-  const n = name.toLowerCase();
-  if (n.includes('pizza')) return '🍕';
-  if (n.includes('bread')) return '🥖';
-  if (n.includes('burger')) return '🍔';
-  if (n.includes('biryani') || n.includes('rice')) return '🍚';
-  if (n.includes('dosa')) return '🥞';
-  if (n.includes('noodle') || n.includes('fried')) return '🍜';
-  return '🍽️';
-}
-
-const PHOTO_EXTS = ['jpg', 'png', 'webp', 'jpeg'];
-
-function slugify(name: string) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-}
-
-function imageOf(l: unknown): string | undefined {
-  const v = l as { image?: unknown; imageUrl?: unknown };
-  if (typeof v.image === 'string' && v.image) return v.image;
-  if (typeof v.imageUrl === 'string' && v.imageUrl) return v.imageUrl;
-  return undefined;
-}
-
-function FoodThumb({ name, image }: { name: string; image?: string }) {
-  const [tryIdx, setTryIdx] = useState(0);
-  const candidates = image
-    ? [image]
-    : PHOTO_EXTS.map((x) => `/images/food/${slugify(name)}.${x}`);
-  if (tryIdx >= candidates.length) {
-    return <div className={styles.thumb} aria-hidden="true">{emojiFor(name)}</div>;
-  }
+function Icon({ name, className }: { name: IconName; className?: string }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className={styles.photo}
-      src={candidates[tryIdx]}
-      alt={name}
-      onError={() => setTryIdx((i) => i + 1)}
-    />
+    <svg
+      className={className ?? shell.ic}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={PATHS[name]} />
+    </svg>
+  );
+}
+
+async function fetchName(): Promise<string> {
+  try {
+    const token = window.localStorage.getItem(TOKEN_KEY);
+    if (!token) return "";
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return "";
+    const json = await res.json().catch(() => ({}));
+    const u = json.user ?? json.data ?? json;
+    const raw: string = (u.firstName ?? u.name ?? "").split(" ")[0];
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  } catch {
+    return "";
+  }
+}
+
+function Frame({ name, count, children }: { name: string; count: number; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const initial = name.charAt(0) || "B";
+
+  return (
+    <div className={shell.page}>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      />
+
+      <header className={shell.topbar}>
+        <div className={shell.topRow}>
+          <button
+            type="button"
+            className={shell.iconBtn}
+            aria-label="Toggle sidebar"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <Icon name="menu" />
+          </button>
+          <Link href="/" className={shell.logo}>
+            Bite<b>Verse</b>
+          </Link>
+          <Link href="/#restaurants" className={shell.search}>
+            <Icon name="search" />
+            <span>Search restaurants or dishes</span>
+          </Link>
+          <span className={shell.spacer} />
+          <Link href="/cart" className={shell.iconBtn} aria-label={`Cart, ${count} items`}>
+            <Icon name="cart" />
+          </Link>
+          <span className={shell.userPill}>
+            <span className={shell.avatar}>{initial}</span>
+            <span className={shell.userName}>{name || "Account"}</span>
+          </span>
+        </div>
+      </header>
+
+      <div className={`${shell.shell} ${open ? shell.shellOpen : ""}`}>
+        {open && (
+          <button type="button" className={shell.scrim} aria-label="Close sidebar" onClick={() => setOpen(false)} />
+        )}
+
+        <aside className={shell.side} aria-label="Menu">
+          <p className={shell.menuLabel}>Menu</p>
+          <nav className={shell.nav}>
+            {NAV.map((n) => (
+              <Link
+                key={n.key}
+                href={n.href}
+                onClick={() => setOpen(false)}
+                className={`${shell.navLink} ${n.key === "cart" ? shell.navOn : ""}`}
+              >
+                <Icon name={n.icon} />
+                {n.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className={shell.promo}>
+            <p>Hungry right now? Find something to order.</p>
+            <Link href="/#restaurants" className={shell.promoBtn} onClick={() => setOpen(false)}>
+              Browse restaurants
+            </Link>
+          </div>
+        </aside>
+
+        <main className={shell.main}>{children}</main>
+      </div>
+    </div>
   );
 }
 
 export default function CartPage() {
   const cart = useCart();
-  const lines = cart?.lines ?? [];
-  const groups = useMemo(() => groupByRestaurant(cart), [cart]);
-  const itemsKey = lines.map((l) => `${l.restaurantId}:${l.id}:${l.qty}`).join('|');
-  const count = lines.reduce((n, l) => n + l.qty, 0);
-
-  const [loaded, setLoaded] = useState(false);
-  const [coupon, setCoupon] = useState<string | null>(null);
-  const [codeInput, setCodeInput] = useState('');
-  const [couponMsg, setCouponMsg] = useState('');
-  const [quote, setQuote] = useState<Quote | null>(null);
-  const [quoteError, setQuoteError] = useState('');
+  const [name, setName] = useState("");
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(COUPON_KEY);
-      if (saved) setCoupon(saved);
-    } catch {
-      // storage unavailable
-    }
-    setLoaded(true);
-  }, []);
-
-  function priceCart(code: string | null): Promise<Quote> {
-    return fetch(`${API_URL}/api/orders/quote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        items: lines.map((l) => ({ restaurantId: l.restaurantId, menuItemId: l.id, qty: l.qty })),
-        couponCode: code ?? '',
-      }),
-    }).then(async (res) => {
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.message || `Could not price your cart (${res.status})`);
-      return json as Quote;
-    });
-  }
-
-  useEffect(() => {
-    if (!loaded) return;
-    if (lines.length === 0) {
-      setQuote(null);
-      return;
-    }
     let cancelled = false;
-    setQuoteError('');
-    priceCart(coupon)
-      .then((q) => {
-        if (!cancelled) setQuote(q);
-      })
-      .catch((err: Error) => {
-        if (!cancelled) {
-          setQuoteError(
-            err.message === 'Failed to fetch'
-              ? 'Could not reach the server. Check that the API is running on port 5000.'
-              : err.message
-          );
-        }
-      });
+    fetchName().then((n) => {
+      if (!cancelled) setName(n);
+    });
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, itemsKey, coupon]);
+  }, []);
 
-  function applyCoupon(code: string) {
-    const clean = code.trim().toUpperCase();
-    if (!clean) return;
-    priceCart(clean)
-      .then((q) => {
-        if (q.couponApplied === clean) {
-          setCoupon(clean);
-          setCouponMsg('');
-          setCodeInput('');
-          try {
-            localStorage.setItem(COUPON_KEY, clean);
-          } catch {
-            // ignore
-          }
-        } else {
-          setCouponMsg(q.couponMessage || 'That code is not valid for this cart.');
-        }
-      })
-      .catch((err: Error) => setCouponMsg(err.message));
-  }
-
-  function removeCoupon() {
-    setCoupon(null);
-    setCouponMsg('');
-    try {
-      localStorage.removeItem(COUPON_KEY);
-    } catch {
-      // ignore
-    }
-  }
-
-  if (!loaded) {
-    return (
-      <main className={styles.page}>
-        <p className={styles.muted}>Loading cart…</p>
-      </main>
-    );
-  }
+  const lines = cart?.lines ?? [];
+  const count = cartCountOf(cart);
 
   if (lines.length === 0) {
     return (
-      <main className={styles.page}>
-        <Link href="/" className={styles.back}>← Back to menu</Link>
-        <div className={styles.empty}>
-          <h2 className={styles.emptyTitle}>Your cart is empty</h2>
-          <p className={styles.muted}>Add something from a restaurant to get started.</p>
-          <Link href="/" className={styles.primary}>Browse restaurants</Link>
+      <Frame name={name} count={0}>
+        <h1 className={styles.title}>Your cart</h1>
+        <div className={`${styles.panel} ${styles.empty}`}>
+          <span className={styles.emptyIcon}>
+            <Icon name="cart" className="" />
+          </span>
+          <h2>Your cart is empty</h2>
+          <p>Pick a restaurant and add a few dishes. They will show up here.</p>
+          <Link href="/#restaurants" className={styles.checkout}>
+            Browse restaurants
+          </Link>
         </div>
-      </main>
+      </Frame>
     );
   }
 
+  const groups = groupByRestaurant(cart);
+  const subtotal = cartSubtotalOf(cart);
+  const delivery = cartDeliveryFeeOf(cart);
+
   return (
-    <><main className={styles.page}>
-      <Link href="/" className={styles.back}>← Back to menu</Link>
+    <Frame name={name} count={count}>
       <h1 className={styles.title}>Your cart</h1>
-      <p className={styles.sub}>
-        From <strong>{groups.map((g) => g.restaurantName).join(', ')}</strong> · {count} {count === 1 ? 'item' : 'items'}
-      </p>
 
       <div className={styles.layout}>
-        <div className={styles.main}>
-          <section className={styles.card}>
-            <h3 className={styles.cardTitle}>Your items</h3>
-            {groups.map((g) => (
-              <div key={g.restaurantId} className={styles.group}>
-                {groups.length > 1 && <div className={styles.groupName}>{g.restaurantName}</div>}
-                {g.lines.map((l) => (
-                  <div key={`${l.restaurantId}:${l.id}`} className={styles.row}>
-                    <FoodThumb name={l.name} image={imageOf(l)} />
-                    <div className={styles.itemInfo}>
-                      <strong>{l.name}</strong>
-                      <span className={styles.muted}>{rupees(l.price)} each</span>
-                      <button type="button" className={styles.linkBtn} onClick={() => removeLine(l.id)}>
-                        Remove
-                      </button>
-                    </div>
-                    <div className={styles.lineSide}>
-                      <div className={styles.qty}>
-                        <button type="button" onClick={() => changeQty(l.id, -1)} aria-label={`Decrease ${l.name}`}>−</button>
-                        <span className={styles.qtyValue}>{l.qty}</span>
-                        <button type="button" onClick={() => changeQty(l.id, 1)} aria-label={`Increase ${l.name}`}>+</button>
-                      </div>
-                      <div className={styles.lineTotal}>{rupees(l.price * l.qty)}</div>
-                    </div>
-                  </div>
-                ))}
+        <div className={styles.panel}>
+          {groups.map((g) => (
+            <section key={g.restaurantId} className={styles.group}>
+              <div className={styles.groupHead}>
+                <h2 className={styles.restaurant}>{g.restaurantName}</h2>
+                <span className={styles.fee}>Delivery {money(g.fee)}</span>
               </div>
-            ))}
-          </section>
+              <ul className={styles.lines}>
+                {g.lines.map((l) => (
+                  <li key={l.id} className={styles.line}>
+                    <span className={styles.name}>
+                      {l.name}
+                      <span className={styles.unit}>{money(l.price)} each</span>
+                    </span>
+                    <span className={styles.stepper}>
+                      <button type="button" onClick={() => changeQty(l.id, -1)} aria-label={`Decrease ${l.name}`}>
+                        -
+                      </button>
+                      <span aria-live="polite">{l.qty}</span>
+                      <button type="button" onClick={() => changeQty(l.id, 1)} aria-label={`Increase ${l.name}`}>
+                        +
+                      </button>
+                    </span>
+                    <span className={styles.price}>{money(l.price * l.qty)}</span>
+                    <button
+                      type="button"
+                      className={styles.remove}
+                      onClick={() => removeLine(l.id)}
+                      aria-label={`Remove ${l.name}`}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </div>
 
-        <aside className={styles.side}>
-          <section className={styles.card}>
-            <h3 className={styles.cardTitle}>Offers</h3>
-            <div className={styles.codeRow}>
-              <input
-                className={styles.codeInput}
-                value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value)}
-                placeholder="ENTER CODE"
-                maxLength={14}
-              />
-              <button type="button" className={styles.applyBtn} onClick={() => applyCoupon(codeInput)}>
-                Apply
-              </button>
-            </div>
-            {coupon && (
-              <div className={styles.applied}>
-                <span>{coupon} applied</span>
-                <button type="button" className={styles.linkBtn} onClick={removeCoupon}>Remove</button>
-              </div>
-            )}
-            {couponMsg && <p className={styles.error}>{couponMsg}</p>}
-            <div className={styles.chips}>
-              {OFFER_CODES.map((c) => (
-                <button key={c} type="button" className={styles.chip} onClick={() => applyCoupon(c)}>
-                  {c}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.card}>
-            <h3 className={styles.cardTitle}>Bill summary</h3>
-            {quoteError && <p className={styles.error}>{quoteError}</p>}
-            {!quote && !quoteError && <p className={styles.muted}>Calculating…</p>}
-            {quote && (
-              <>
-                <div className={styles.billRow}>
-                  <span>Item total</span>
-                  <span className={styles.billValue}>{rupees(quote.subtotal)}</span>
-                </div>
-                {quote.discount > 0 && (
-                  <div className={styles.billRow}>
-                    <span className={styles.discount}>Coupon {quote.couponApplied}</span>
-                    <span className={styles.discount}>−{rupees(quote.discount)}</span>
-                  </div>
-                )}
-                <div className={styles.billRow}>
-                  <span>Delivery fee</span>
-                  <span className={styles.billValue}>{quote.fee === 0 ? 'Free' : rupees(quote.fee)}</span>
-                </div>
-                {typeof quote.tax === 'number' && (
-                  <div className={styles.billRow}>
-                    <span>Taxes and charges</span>
-                    <span className={styles.billValue}>{rupees(quote.tax)}</span>
-                  </div>
-                )}
-                <div className={styles.billTotal}>
-                  <span>To pay</span>
-                  <span>{rupees(quote.total)}</span>
-                </div>
-              </>
-            )}
-            <Link href="/checkout" className={styles.placeBtn}>
-              {quote ? `Proceed to checkout · ${rupees(quote.total)}` : 'Proceed to checkout'}
-            </Link>
-          </section>
+        <aside className={`${styles.panel} ${styles.summary}`} aria-label="Order summary">
+          <h2>Order summary</h2>
+          <div className={styles.sumRow}>
+            <span>Items ({count})</span>
+            <span>{money(subtotal)}</span>
+          </div>
+          <div className={styles.sumRow}>
+            <span>Delivery</span>
+            <span>{money(delivery)}</span>
+          </div>
+          <div className={styles.sumTotal}>
+            <span>Total</span>
+            <span>{money(subtotal + delivery)}</span>
+          </div>
+          <Link href="/checkout" className={styles.checkout}>
+            Checkout
+          </Link>
+          <Link href="/#restaurants" className={styles.more}>
+            Add more dishes
+          </Link>
         </aside>
-      </div></main><Footer /></>
+      </div>
+    </Frame>
   );
 }
-
-
-
-
