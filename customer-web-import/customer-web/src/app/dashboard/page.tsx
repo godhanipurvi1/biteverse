@@ -39,7 +39,7 @@ const NAV: { key: NavKey; href: string; label: string; icon: IconName }[] = [
   { key: "dashboard", href: "/dashboard", label: "Dashboard", icon: "grid" },
   { key: "restaurants", href: "/#restaurants", label: "Restaurants", icon: "store" },
   { key: "orders", href: "/orders", label: "My orders", icon: "receipt" },
-  { key: "favorites", href: "/favorites", label: "Favourites", icon: "heart" },
+  { key: "favorites", href: "/favourites", label: "Favourites", icon: "heart" },
   { key: "cart", href: "/cart", label: "Cart", icon: "cart" },
 ];
 
