@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import s from './gate.module.css';
@@ -10,7 +10,8 @@ type State = 'checking' | 'in' | 'out' | 'denied' | 'down';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<State>('checking');
-  const [email, setEmail] = useState('admin');
+  const [email, setEmail] = useState('admin@biteverse.local');
+  const [showPw, setShowPw] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -103,7 +104,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </label>
             <label className={s.label}>
               Password
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+              <span style={{ position: "relative", display: "block" }}>
+                <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required style={{ width: "100%", paddingRight: 44 }} />
+                <button type="button" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "Hide password" : "Show password"} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: 0, cursor: "pointer", color: "inherit", padding: 4 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" />{showPw && <line x1="3" y1="3" x2="21" y2="21" />}</svg>
+                </button>
+              </span>
             </label>
             {error && <p className={s.err}>{error}</p>}
             <button type="submit" className={s.btn} disabled={busy}>{busy ? 'Signing in...' : 'Sign in'}</button>

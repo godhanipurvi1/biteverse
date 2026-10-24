@@ -1,6 +1,7 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import ScrollLinks from "../components/ScrollLinks";
 
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -24,7 +25,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${display.variable} ${body.variable}`}>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning><ScrollLinks />{children}</body>
     </html>
   );
 }
