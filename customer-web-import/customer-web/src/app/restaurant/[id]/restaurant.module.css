@@ -1,12 +1,12 @@
-﻿.page {
-  --rd-surface: #1b1815;
-  --rd-surface-2: #241f1a;
-  --rd-line: #2f2923;
-  --rd-ink: #f4efe9;
-  --rd-muted: #a79e94;
-  --rd-brand: #ff7a33;
-  --rd-brand-ink: #1a0d03;
-  --rd-brand-soft: #3a2314;
+.page {
+  --rd-surface: var(--surface);
+  --rd-surface-2: var(--surface-2);
+  --rd-line: var(--line);
+  --rd-ink: var(--ink);
+  --rd-muted: var(--muted);
+  --rd-brand: var(--brand);
+  --rd-brand-ink: var(--brand-ink);
+  --rd-brand-soft: var(--brand-soft);
   --rd-ok: #55c58a;
   --rd-bad: #f08a83;
 

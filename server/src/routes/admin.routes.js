@@ -157,6 +157,55 @@ router.get("/stats", async (req, res) => {
   }
 });
 
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const uploadDir = path.join(__dirname, "..", "..", "uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: uploadDir,
+    filename: (req, file, cb) =>
+      cb(null, Date.now() + "-" + file.originalname.replace(/[^A-Za-z0-9._-]/g, "_")),
+  }),
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => cb(null, /^image\/(jpeg|png|webp)$/.test(file.mimetype)),
+});
+
+// POST /api/admin/menu : add a dish to one restaurant. Multipart form with optional "image".
+router.post("/menu", upload.single("image"), async (req, res) => {
+  try {
+    const { restaurantId, name, description, price, veg, available } = req.body;
+    if (!ObjectId.isValid(restaurantId)) return res.status(400).json({ message: "Pick a restaurant" });
+    const cleanName = String(name || "").trim();
+    if (!cleanName) return res.status(400).json({ message: "Enter a dish name" });
+    const rupees = Number(price);
+    if (!Number.isFinite(rupees) || rupees <= 0) return res.status(400).json({ message: "Enter a valid price" });
+
+    const dish = {
+      _id: new ObjectId(),
+      name: cleanName,
+      description: String(description || "").trim(),
+      priceInr: Math.round(rupees * 100),
+      veg: veg === "true",
+      category: String(req.body.category || "").trim(),
+      prepTime: Number(req.body.prepTime) || null,
+      available: available !== "false",
+      image: req.file ? `/uploads/${req.file.filename}` : null,
+    };
+    const r = await db().collection("restaurants").updateOne(
+      { _id: new ObjectId(restaurantId) },
+      { $push: { menu: dish } }
+    );
+    if (r.matchedCount === 0) return res.status(404).json({ message: "Restaurant not found" });
+    res.status(201).json({ ok: true, id: String(dish._id) });
+  } catch (err) {
+    console.error("admin add dish failed:", err.message);
+    res.status(500).json({ message: "Could not add the dish" });
+  }
+});
 module.exports = router;
 
 

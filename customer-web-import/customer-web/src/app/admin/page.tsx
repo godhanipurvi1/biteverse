@@ -76,7 +76,7 @@ const ICONS: Record<string, string> = {
   dl: 'M12 4v11M7 11l5 5 5-5M5 20h14',
 };
 
-const inr = (n: number) => `â‚¹${Math.round(n).toLocaleString('en-IN')}`;
+const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 const shortId = (id: string) => `#${id.slice(-6).toUpperCase()}`;
 const when = (iso: string) =>
   new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });

@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import Footer from '../../components/Footer';
+
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthError } from "../../lib/orders";
@@ -138,9 +138,9 @@ export default function HomePage() {
         return res.json() as Promise<RestaurantResponse>;
       })
       .then((json) => {
-        const list = (json.data ?? []).map(toRestaurant);
+        const list = (json.restaurants ?? json.data ?? []).map(toRestaurant);
         setRestaurants(list);
-        setRestaurantCache(json.data ?? []);
+        setRestaurantCache(json.restaurants ?? json.data ?? []);
         setLoadStatus(list.length ? "" : "No restaurants are available yet.");
       })
       .catch((err: Error) => {
@@ -377,7 +377,7 @@ export default function HomePage() {
             </div>
           </section>
       </main>
-      <Footer />
+      
       </div>
 
       <MenuSheet restaurant={menuFor} onClose={() => setMenuFor(null)} onToast={setToast} />
@@ -426,7 +426,7 @@ function RestaurantCard({ restaurant: r, tint, isFav, onToggleFav, onOpenMenu }:
         {true && (
           <img
             className="photo"
-            src={image}
+            src={`/restaurants/${r._id}.jpg`} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = image ?? ""; }}
             alt={r.name}
             loading="lazy"
           />
@@ -458,7 +458,7 @@ function RestaurantCard({ restaurant: r, tint, isFav, onToggleFav, onOpenMenu }:
         {r.address && <span className="meta">{r.address}</span>}
       </div>
       <button type="button" className="add" onClick={(e) => { e.stopPropagation(); onOpenMenu(); }}>
-        View restaurant
+        View menu
       </button>
     </article>
   );
@@ -491,6 +491,7 @@ function DishCard({ dish, restaurant, tint, onOpenMenu }: DishCardProps) {
     </article>
   );
 }
+
 
 
 

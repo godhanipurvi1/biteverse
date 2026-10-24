@@ -1,0 +1,53 @@
+import Link from "next/link";
+import styles from "./HeroShowcase.module.css";
+
+export default function HeroShowcase() {
+  return (
+    <section className={styles.hero}>
+      <div className={styles.copy}>
+        <span className={styles.pill}>Good Food • Better Mood</span>
+        <h1 className={styles.heading}>
+          Great food,
+          <br />
+          <span className={styles.accent}>delivered to you</span>
+        </h1>
+        <p className={styles.lead}>
+          Craving <strong>burgers</strong>? Discover your favourite restaurants, order delicious food,
+          and enjoy fast and reliable delivery, all in one place.
+        </p>
+        <div className={styles.searchRow}>
+          <label className={styles.search}>
+            <span aria-hidden="true">🔍</span>
+            <input placeholder="Search for a restaurant or dish" aria-label="Search restaurants or dishes" />
+          </label>
+          <Link href="/restaurants" className={styles.cta}>Browse Restaurants →</Link>
+        </div>
+        <div className={styles.perks}>
+          <span>Live order tracking</span>
+          <span>Secure payments</span>
+          <span>Free delivery over ₹249</span>
+        </div>
+      </div>
+
+      <div className={styles.stage} aria-hidden="true">
+        <div className={styles.blob} />
+        <img className={`${styles.img} ${styles.burger}`} src="/hero/burger.png" alt="" />
+        <img className={`${styles.img} ${styles.pizza}`} src="/hero/pizza.png" alt="" />
+        <img className={`${styles.img} ${styles.truck}`} src="/hero/truck.png" alt="" />
+
+        <div className={`${styles.float} ${styles.f1}`}>
+          <b>Arrives in 28 min</b>
+          <small>Fast delivery</small>
+        </div>
+        <div className={`${styles.float} ${styles.f2}`}>
+          <b>★ 4.8 rated</b>
+          <small>Loved by diners</small>
+        </div>
+        <div className={`${styles.float} ${styles.f3}`}>
+          <b>20% off</b>
+          <small>Code BITE20</small>
+        </div>
+      </div>
+    </section>
+  );
+}

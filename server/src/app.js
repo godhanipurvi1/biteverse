@@ -29,6 +29,10 @@ app.use("/api/admin/reviews", require("./routes/admin-reviews.routes"));
 app.use("/api/admin/profile", require("./routes/admin-profile.routes"));
 app.use("/api/admin", require("./routes/admin.routes"));
 
+app.use("/uploads", require("express").static(require("path").join(__dirname, "..", "uploads")));
+
+app.use("/api/reviews", require("./routes/reviews.routes"));
+
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
 });

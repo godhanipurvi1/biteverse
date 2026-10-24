@@ -1,9 +1,9 @@
-﻿.footer {
-  --f-bg: #231f1b;
-  --f-border: #2f2923;
-  --f-text: #f6f0ea;
-  --f-muted: #a39a92;
-  --f-accent: #ff7a2e;
+.footer {
+  --f-bg: var(--surface-2);
+  --f-border: var(--line);
+  --f-text: var(--ink);
+  --f-muted: var(--muted);
+  --f-accent: var(--brand);
   grid-column: 2;
   min-width: 0;
   background: var(--f-bg);

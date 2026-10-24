@@ -1,0 +1,31 @@
+.wrap { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; color: var(--ink, #f4efe9); }
+.title { font-size: 40px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.02em; }
+.sub { color: var(--muted, #a79e94); margin: 0 0 22px; }
+.section { font-size: 24px; font-weight: 800; margin: 28px 0 14px; }
+.banner { padding: 14px 18px; border-radius: 14px; background: var(--ok-soft, #173325); color: var(--ok, #55c58a); font-weight: 600; margin-bottom: 18px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 20px; }
+.card { border: 1px solid var(--line, #2f2923); border-radius: 20px; padding: 22px; background: var(--surface, #1b1815); display: grid; gap: 16px; }
+.head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.meta { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted, #a79e94); letter-spacing: 0.04em; }
+.restaurant { margin: 6px 0 0; font-size: 22px; font-weight: 800; }
+.badgeOk, .badgeLive, .badgeBad { padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.badgeOk { background: var(--ok-soft, #173325); color: var(--ok, #55c58a); }
+.badgeLive { background: var(--brand-soft, #3a2314); color: var(--brand-text, #ffa270); }
+.badgeBad { background: var(--bad-soft, #3b1b19); color: var(--bad, #f08a83); }
+.tracker { position: relative; padding: 0 6px; }
+.line { position: absolute; left: 10%; right: 10%; top: 14px; height: 3px; background: var(--line, #2f2923); border-radius: 3px; overflow: hidden; }
+.fill { height: 100%; background: var(--brand, #ff7a33); transition: width 0.4s; }
+.steps { display: grid; grid-template-columns: repeat(5, 1fr); position: relative; }
+.step { display: grid; justify-items: center; gap: 8px; }
+.dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line, #2f2923); background: var(--surface, #1b1815); display: grid; place-items: center; font-size: 13px; color: var(--brand-ink, #1a0d03); }
+.dotOn { background: var(--brand, #ff7a33); border-color: var(--brand, #ff7a33); }
+.stepLabel { font-size: 12px; color: var(--muted, #a79e94); text-align: center; }
+.stepOn { color: var(--ink, #f4efe9); font-weight: 600; }
+.statusBox { padding: 14px 16px; border-radius: 14px; background: var(--brand-soft, #3a2314); color: var(--ink, #f4efe9); font-weight: 600; }
+.items { margin: 0; color: var(--muted, #a79e94); font-size: 14px; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--line, #2f2923); padding-top: 16px; }
+.price { font-size: 20px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.ghost { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line, #2f2923); background: transparent; color: inherit; cursor: pointer; text-decoration: none; display: inline-block; }
+.primary { font: inherit; font-weight: 700; padding: 10px 20px; border-radius: 999px; border: none; background: var(--brand, #ff7a33); color: var(--brand-ink, #1a0d03); cursor: pointer; }
+.empty { padding: 40px; text-align: center; color: var(--muted, #a79e94); border: 1px dashed var(--line, #2f2923); border-radius: 18px; }

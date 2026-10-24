@@ -1,0 +1,303 @@
+﻿"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import Shell from "../../components/Shell";
+import HeroShowcase from "../../components/HeroShowcase";
+import styles from "./home.module.css";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const PALETTE = ["#3d2519", "#363317", "#2c1f2a", "#1d3323"];
+const CHIPS = ["All", "Thali", "Biryani", "Pizza", "Burgers", "Chinese", "Healthy", "Desserts"];
+const TICKER = [
+  "Cold Coffee",
+  "Gujarati Thali",
+  "Dum Biryani",
+  "Wood-fired Pizza",
+  "Smash Burgers",
+  "Hakka Noodles",
+  "South Indian",
+  "Chaat and Street Food",
+  "Healthy Bowls",
+];
+const STEPS = [
+  { title: "Choose a restaurant", body: "Search by name or pick a cuisine, then fill your cart." },
+  { title: "Pay and place", body: "Apply a coupon and pay by UPI, card or cash on delivery." },
+  { title: "Track to your door", body: "Follow your rider live and get notified when they arrive." },
+];
+
+const ICON_RESTAURANTS = (
+  <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l1.5-5h15L21 9" />
+    <path d="M4 9v11h16V9" />
+    <path d="M9 20v-6h6v6" />
+  </svg>
+);
+const ICON_OFFERS = (
+  <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" />
+    <circle cx="7.5" cy="7.5" r="1.5" />
+  </svg>
+);
+const ICON_TRACK = (
+  <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
+
+type Offer = { code: string; title?: string; type: string; value?: number };
+type Rest = {
+  _id: string;
+  name: string;
+  categories?: string[];
+  rating?: number;
+  isOpen?: boolean;
+  deliveryTime?: string;
+  costForTwo?: number;
+  costForTwoInr?: number;
+  offerLabel?: string;
+};
+
+function offerHeadline(o: Offer): string {
+  const v = Number(o.value ?? 0);
+  if (o.type === "percent") return `${v}% off`;
+  if (o.type === "fixed" || o.type === "flat") return `₹${v} off`;
+  if (o.type === "free_delivery") return "₹0 fee";
+  return o.title ?? o.code;
+}
+
+function iconFor(cats: string[] = []): string {
+  const c = cats.join(" ").toLowerCase();
+  if (c.includes("thali")) return "🍛";
+  if (c.includes("biryani")) return "🍚";
+  if (c.includes("pizza")) return "🍕";
+  if (c.includes("burger")) return "🍔";
+  if (c.includes("chinese")) return "🥡";
+  if (c.includes("healthy") || c.includes("salad")) return "🥗";
+  if (c.includes("dessert")) return "🧁";
+  return "🍽️";
+}
+
+function priceFor(r: Rest): string {
+  const rupees = r.costForTwo ?? (r.costForTwoInr != null ? r.costForTwoInr / 100 : null);
+  return rupees ? `₹${Math.round(rupees)} for two` : "";
+}
+
+export default function HomePage() {
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [restaurants, setRestaurants] = useState<Rest[]>([]);
+  const [filter, setFilter] = useState("All");
+  const [favs, setFavs] = useState<string[]>([]);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`${API_URL}/api/offers`, { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j && Array.isArray(j.data)) setOffers(j.data.slice(0, 3));
+      })
+      .catch(() => {});
+
+    fetch(`${API_URL}/api/restaurants`, { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        const list: Rest[] = Array.isArray(j?.data) ? j.data : [];
+        setRestaurants(list.filter((r) => r && r._id && r.name));
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, []);
+
+  const shown = useMemo(() => {
+    const list =
+      filter === "All"
+        ? restaurants
+        : restaurants.filter((r) =>
+            (r.categories ?? []).some((c) => c.toLowerCase().includes(filter.toLowerCase()))
+          );
+    return list.slice(0, 8);
+  }, [restaurants, filter]);
+
+  function toggleFav(id: string) {
+    setFavs((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  async function copyCode(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {}
+    setCopied(code);
+    setTimeout(() => setCopied((c) => (c === code ? null : c)), 1500);
+  }
+
+  return (
+    <Shell>
+      <div className={styles.page}>
+        <HeroShowcase />
+
+        <div className={styles.ticker} aria-hidden="true">
+          <div className={styles.track}>
+            {[...TICKER, ...TICKER].map((t, i) => (
+              <span key={i}>{t}</span>
+            ))}
+          </div>
+        </div>
+
+        <section className={styles.features}>
+          <Link href="/restaurants" className={`${styles.feature} ${styles.featureActive}`}>
+            <span className={styles.featIcon}>{ICON_RESTAURANTS}</span>
+            <span className={styles.live}>Live</span>
+            <h3>Restaurants</h3>
+            <p>Browse local kitchens near you, from home-style thali to late-night biryani.</p>
+            <span className={styles.more}>Explore →</span>
+          </Link>
+          <Link href="/offers" className={styles.feature}>
+            <span className={styles.featIcon}>{ICON_OFFERS}</span>
+            <span className={styles.live}>Live</span>
+            <h3>Offers</h3>
+            <p>Fresh coupons and free delivery deals, applied at checkout in one tap.</p>
+            <span className={styles.more}>See deals →</span>
+          </Link>
+          <Link href="/orders" className={styles.feature}>
+            <span className={styles.featIcon}>{ICON_TRACK}</span>
+            <span className={styles.live}>Live</span>
+            <h3>Live tracking</h3>
+            <p>Watch your order move from the kitchen to your door, step by step.</p>
+            <span className={styles.more}>Track now →</span>
+          </Link>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.h2}>Popular near you</h2>
+          <p className={styles.sub}>Pick a cuisine to filter. Tap the heart to save a favourite.</p>
+
+          <div className={styles.chips}>
+            {CHIPS.map((c) => (
+              <button
+                key={c}
+                className={`${styles.chip} ${filter === c ? styles.chipOn : ""}`}
+                onClick={() => setFilter(c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          {restaurants.length === 0 && <p className={styles.muted}>Loading restaurants…</p>}
+          {restaurants.length > 0 && shown.length === 0 && (
+            <p className={styles.muted}>No restaurants match this cuisine.</p>
+          )}
+
+          <div className={styles.rgrid}>
+            {shown.map((r, i) => {
+              const isFav = favs.includes(r._id);
+              return (
+                <article key={r._id} className={styles.rcard}>
+                  <div className={styles.rhero} style={{ background: PALETTE[i % PALETTE.length] }}>
+                    <span className={styles.emoji} aria-hidden="true">{iconFor(r.categories)}</span>
+                    <button
+                      type="button"
+                      className={`${styles.heart} ${isFav ? styles.heartOn : ""}`}
+                      onClick={() => toggleFav(r._id)}
+                      aria-label={isFav ? "Remove from favourites" : "Add to favourites"}
+                      aria-pressed={isFav}
+                    >
+                      {isFav ? "♥" : "♡"}
+                    </button>
+                    {r.offerLabel && <span className={styles.badge}>{r.offerLabel}</span>}
+                  </div>
+                  <div className={styles.rbody}>
+                    <h3 className={styles.rname}>{r.name}</h3>
+                    <p className={styles.rcuisine}>{(r.categories ?? []).join(", ") || "Restaurant"}</p>
+                    <div className={styles.rmeta}>
+                      <span>★ {r.rating ? Number(r.rating).toFixed(1) : "New"}</span>
+                      <span>{r.deliveryTime ?? "30–40 min"}</span>
+                      {priceFor(r) && <span>{priceFor(r)}</span>}
+                    </div>
+                    {r.isOpen === false ? (
+                      <span className={styles.closed}>Closed right now</span>
+                    ) : (
+                      <Link href={`/restaurant/${r._id}`} className={styles.viewBtn}>View menu</Link>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.head}>
+            <h2 className={styles.h2}>Today&apos;s offers</h2>
+            <Link href="/offers" className={styles.link}>See all</Link>
+          </div>
+          <p className={styles.sub}>Copy a code and paste it at checkout.</p>
+          <div className={styles.offers}>
+            {offers.length === 0 && <p className={styles.muted}>No offers right now.</p>}
+            {offers.map((o, i) => (
+              <article key={o.code} className={`${styles.offer} ${i === 1 ? styles.offerOn : ""}`}>
+                <div className={styles.kicker}>{o.title ?? "Offer"}</div>
+                <div className={styles.headline}>{offerHeadline(o)}</div>
+                <div className={styles.codeRow}>
+                  <span className={styles.code}>{o.code}</span>
+                  <button className={styles.copyBtn} onClick={() => copyCode(o.code)}>
+                    {copied === o.code ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.track2}>
+          <div className={styles.trackCopy}>
+            <h2>Know where your food is, every minute</h2>
+            <p>From the moment the kitchen confirms your order to the knock at your door, follow each step live.</p>
+            <Link href="/restaurants" className={styles.cta}>Place an order →</Link>
+          </div>
+          <div className={styles.orderCard}>
+            <div className={styles.orderTop}>
+              <div>
+                <div className={styles.orderId}>Order #BV-2041</div>
+                <div className={styles.orderFrom}>Surti Locho House</div>
+              </div>
+              <span className={styles.done}>Done</span>
+            </div>
+            <div className={styles.progress}>
+              <span className={styles.pDot} />
+              <span className={styles.pDot} />
+              <span className={styles.pDot} />
+              <span className={styles.pDot} />
+              <span className={styles.pBike}>🛵</span>
+            </div>
+            <div className={styles.pLabels}>
+              <span>Confirmed</span>
+              <span>Preparing</span>
+              <span>On the way</span>
+              <span>Delivered</span>
+            </div>
+            <div className={styles.pNote}>🕒 Delivered. Enjoy your meal</div>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.h2}>How it works</h2>
+          <p className={styles.sub}>Three steps from hungry to happy.</p>
+          <div className={styles.steps}>
+            {STEPS.map((s, i) => (
+              <div key={s.title} className={styles.step}>
+                <div className={styles.stepNum}>{i + 1}</div>
+                <h3 className={styles.stepTitle}>{s.title}</h3>
+                <p className={styles.muted}>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </Shell>
+  );
+}

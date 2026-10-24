@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import Footer from '../../../components/Footer';
+
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { AuthError } from "../../../lib/orders";
@@ -72,7 +72,7 @@ function toRestaurant(raw: RawRestaurant): Restaurant {
       description: d.description,
       price: typeof d.priceInr === "number" ? d.priceInr / 100 : 0,
       veg: d.veg,
-      available: d.available,
+      available: d.available, image: (d as { image?: string | null }).image ?? null,
     })),
   };
 }
@@ -309,7 +309,7 @@ export default function RestaurantPage() {
                       const unavailable = m.available === false;
                       return (
                         <li key={m._id} className={styles.item}>
-                          <div className={styles.itemText}>
+                          {(m as { image?: string | null }).image && (<img src={API_URL + (m as { image?: string | null }).image} alt="" style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />)}<div className={styles.itemText}>
                             <div className={styles.nameRow}>
                               <span
                                 role="img"
@@ -355,7 +355,7 @@ export default function RestaurantPage() {
             )}
           </div>
       </main>
-      <Footer />
+      
       </div>
 
       {cartCount > 0 && (
