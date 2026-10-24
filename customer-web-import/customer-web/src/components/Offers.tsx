@@ -28,10 +28,10 @@ export default function Offers({ onNotify }: Props) {
     fetch(`${API_URL}/api/offers`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<{ data?: Offer[] }>;
+        return res.json() as Promise<{ offers?: Offer[]; data?: Offer[] }>;
       })
       .then((json) => {
-        const list = json.data ?? [];
+        const list = json.offers ?? json.data ?? [];
         setOffers(list);
         setStatus(list.length ? "" : "No offers right now. Check back soon.");
       })
@@ -81,3 +81,4 @@ export default function Offers({ onNotify }: Props) {
     </section>
   );
 }
+
