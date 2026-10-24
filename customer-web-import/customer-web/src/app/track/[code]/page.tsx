@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import { use, useCallback, useEffect, useRef, useState } from 'react';
@@ -21,6 +21,7 @@ type TrackOrder = {
 type Tracking = {
   trackingCode: string;
   createdAt: string;
+  updatedAt: string;
   payment: string;
   couponCode: string | null;
   orders: TrackOrder[];
@@ -166,6 +167,10 @@ export default function TrackPage({ params }: { params: Promise<{ code: string }
     ? new Date(data.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     : '';
 
+  const updatedAt = data
+    ? new Date(data.updatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    : '';
+
   const steps = [
     { title: 'Order received', sub: placedAt ? `Placed at ${placedAt}` : '' },
     { title: `Preparing at ${restaurantNames || 'the restaurant'}`, sub: 'About 15 minutes' },
@@ -221,6 +226,7 @@ export default function TrackPage({ params }: { params: Promise<{ code: string }
               <div className={styles.tick}>{cancelled ? '✕' : '✓'}</div>
               <div>
                 <h1>{heading}</h1>
+                {updatedAt && <small>Last updated at {updatedAt}</small>}
                 <p className={styles.sub}>
                   {cancelled
                     ? 'This order was cancelled and will not be prepared.'

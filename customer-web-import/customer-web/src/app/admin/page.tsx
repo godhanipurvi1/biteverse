@@ -21,7 +21,10 @@ type View = 'dashboard' | 'orders' | 'menu' | 'offers' | 'customers' | 'payments
 type Theme = 'light' | 'dark';
 type OrdersInit = { q: string; status: string };
 
+// Backend status names (apps/api order.state.ts) mapped to the admin's labels.
+const BACKEND_FLOW = ['received', 'accepted', 'preparing', 'out-for-delivery', 'delivered'];
 const FLOW = ['placed', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered'];
+const TO_BACKEND: Record<string, string> = { placed: 'received', confirmed: 'accepted', preparing: 'preparing', ready: 'preparing', out_for_delivery: 'out-for-delivery', delivered: 'delivered' };
 const LABEL: Record<string, string> = {
   placed: 'Pending',
   confirmed: 'Confirmed',
@@ -73,7 +76,7 @@ const ICONS: Record<string, string> = {
   dl: 'M12 4v11M7 11l5 5 5-5M5 20h14',
 };
 
-const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
+const inr = (n: number) => `â‚¹${Math.round(n).toLocaleString('en-IN')}`;
 const shortId = (id: string) => `#${id.slice(-6).toUpperCase()}`;
 const when = (iso: string) =>
   new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -324,21 +327,6 @@ export default function AdminPage() {
 </button>
           </nav>
 
-          <div className={styles.navTitle}>System</div>
-<nav className={styles.nav}>
-  <button type="button" className={`${styles.navItem} ${view === 'analytics' ? styles.navOn : ''}`} onClick={() => go('analytics')}>
-    <Icon name="chart" />
-    <span className={styles.lbl}>Analytics</span>
-  </button>
-  <button type="button" className={`${styles.navItem} ${view === 'reviews' ? styles.navOn : ''}`} onClick={() => go('reviews')}>
-    <Icon name="star" />
-    <span className={styles.lbl}>Reviews</span>
-  </button>
-  <button type="button" className={`${styles.navItem} ${view === 'profile' ? styles.navOn : ''}`} onClick={() => go('profile')}>
-    <Icon name="user" />
-    <span className={styles.lbl}>My profile</span>
-  </button>
-</nav>
           <div className={styles.promo}>
             <p>{pending ? `${pending} ${pending === 1 ? 'order is' : 'orders are'} waiting for you.` : 'All caught up. New orders will show here.'}</p>
             <button type="button" className={styles.promoBtn} onClick={() => openOrders({ q: '', status: 'all' })}>Open orders</button>
@@ -382,7 +370,7 @@ function TrendChart({ points }: { points: Trend[] }) {
         return (
           <g key={p.key}>
             <rect x={x} y={h - bh} width={bw} height={Math.max(bh, 2)} rx={4} className={styles.bar}>
-              <title>{`${p.label}: ${inr(p.revenue)} · ${p.orders} orders`}</title>
+              <title>{`${p.label}: ${inr(p.revenue)} Ã‚Â· ${p.orders} orders`}</title>
             </rect>
             {showLabel && (
               <text x={x + bw / 2} y={h + 18} textAnchor="middle" className={styles.axis}>{p.label}</text>
@@ -432,7 +420,7 @@ function Dashboard({
   return (
     <div className={styles.view}>
       <section className={styles.hero}>
-        <span className={styles.kicker}>Good Food • Better Mood</span>
+        <span className={styles.kicker}>Good Food Ã¢â‚¬Â¢ Better Mood</span>
         <h1 className={styles.heroTitle}>
           Run BiteVerse,
           <span>all in one place</span>
@@ -454,28 +442,28 @@ function Dashboard({
         <div className={styles.card}>
           <div className={styles.stat}>
             <span className={styles.statTop}><span className={styles.statIcon}><Icon name="receipt" /></span>Orders today</span>
-            <span className={styles.statVal}>{stats ? stats.todayOrders : '–'}</span>
+            <span className={styles.statVal}>{stats ? stats.todayOrders : 'Ã¢â‚¬â€œ'}</span>
             <span className={styles.statHint}>Placed since midnight</span>
           </div>
         </div>
         <div className={styles.card}>
           <div className={styles.stat}>
             <span className={styles.statTop}><span className={styles.statIcon}><Icon name="rupee" /></span>Revenue today</span>
-            <span className={styles.statVal}>{stats ? inr(stats.todayRevenue) : '–'}</span>
+            <span className={styles.statVal}>{stats ? inr(stats.todayRevenue) : 'Ã¢â‚¬â€œ'}</span>
             <span className={styles.statHint}>Excludes cancelled orders</span>
           </div>
         </div>
         <div className={styles.card}>
           <div className={styles.stat}>
             <span className={styles.statTop}><span className={styles.statIcon}><Icon name="bell" /></span>Waiting to confirm</span>
-            <span className={styles.statVal}>{stats ? stats.byStatus.placed ?? 0 : '–'}</span>
+            <span className={styles.statVal}>{stats ? stats.byStatus.placed ?? 0 : 'Ã¢â‚¬â€œ'}</span>
             <span className={styles.statHint}>New orders from customers</span>
           </div>
         </div>
         <div className={styles.card}>
           <div className={styles.stat}>
             <span className={styles.statTop}><span className={styles.statIcon}><Icon name="fork" /></span>Dishes available</span>
-            <span className={styles.statVal}>{stats ? stats.dishesTotal - stats.dishesUnavailable : '–'}</span>
+            <span className={styles.statVal}>{stats ? stats.dishesTotal - stats.dishesUnavailable : 'Ã¢â‚¬â€œ'}</span>
             <span className={styles.statHint}>{stats ? `of ${stats.dishesTotal} dishes` : ''}</span>
           </div>
         </div>
@@ -744,7 +732,7 @@ function Drawer({
         <div className={styles.dHead}>
           <div>
             <h2 className={styles.h2}>Order {shortId(order._id)}</h2>
-            <p className={styles.sub}>{order.restaurantName} · {when(order.createdAt)}</p>
+            <p className={styles.sub}>{order.restaurantName} Ã‚Â· {when(order.createdAt)}</p>
           </div>
           <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="Close">
             <Icon name="close" />
@@ -766,7 +754,7 @@ function Drawer({
           <h3 className={styles.h3}>Items</h3>
           {order.items.map((i, n) => (
             <div key={n} className={styles.kv}>
-              <span>{i.name} × {i.qty}</span>
+              <span>{i.name} Ãƒâ€” {i.qty}</span>
               <span className={styles.num}>{inr(i.lineTotal)}</span>
             </div>
           ))}
@@ -774,7 +762,7 @@ function Drawer({
           {order.discount > 0 && (
             <div className={styles.kv}>
               <span>Coupon {order.couponCode}</span>
-              <span className={styles.num}>−{inr(order.discount)}</span>
+              <span className={styles.num}>Ã¢Ë†â€™{inr(order.discount)}</span>
             </div>
           )}
           <div className={styles.kv}>
@@ -796,19 +784,31 @@ function Drawer({
           </ol>
         </section>
 
-        <div className={styles.actions}>
-          {next && (
+          <div className={styles.section}>
+            <h3 className={styles.h3}>Change status</h3>
+            <select
+              id="nextStatus"
+              key={order._id + order.status}
+              className={styles.select}
+              defaultValue={FLOW.includes(order.status) ? order.status : 'placed'}
+            >
+              {FLOW.map((f) => (
+                <option key={f} value={f}>{LABEL[f]}</option>
+              ))}
+            </select>
             <button
               type="button"
               className={`${styles.btn} ${styles.btnPri}`}
               disabled={busy}
-              onClick={() =>
-                run(`/api/admin/orders/${order._id}/status`, { status: next }, `Order ${shortId(order._id)} is now ${LABEL[next].toLowerCase()}`)
-              }
+              onClick={() => {
+                const sel = (document.getElementById('nextStatus') as HTMLSelectElement).value;
+                run(`/api/admin/orders/${order._id}/status`, { status: sel }, `Order ${shortId(order._id)} is now ${LABEL[sel].toLowerCase()}`);
+              }}
             >
-              Mark as {LABEL[next].toLowerCase()}
+              Save status
             </button>
-          )}
+          </div>
+        <div className={styles.actions}>
           <button type="button" className={styles.btn} onClick={() => onToast('Receipts are not connected yet')}>
             <Icon name="dl" /> Receipt
           </button>

@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const mongoose = require("mongoose");
 const { requireAuth } = require("../middleware/auth");
 
@@ -48,11 +48,9 @@ router.patch("/orders/:id/status", async (req, res) => {
     const order = await db().collection("orders_v2").findOne({ _id });
     if (!order) return res.status(404).json({ message: "Order not found" });
     if (order.status === "cancelled") return res.status(400).json({ message: "This order is cancelled" });
-    const i = FLOW.indexOf(order.status);
-    const next = FLOW[i + 1];
-    if (!next || req.body?.status !== next) {
-      return res.status(400).json({ message: "This order cannot move to that status yet" });
-    }
+    const next = req.body?.status;
+    if (!FLOW.includes(next)) return res.status(400).json({ message: "Unknown status" });
+    if (next === order.status) return res.json({ ok: true, status: next });
     const now = new Date();
     await db().collection("orders_v2").updateOne(
       { _id },

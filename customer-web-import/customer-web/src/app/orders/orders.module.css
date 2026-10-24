@@ -1,124 +1,63 @@
-/* src/app/orders/orders.module.css
-   Scoped to the orders pages. Swap the green below for the site accent if it has one. */
-
-.list {
-  list-style: none;
-  margin: 16px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
+﻿.wrap { padding: 20px 0 40px; }
+.title { font-size: 2.6rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em; }
+.sub { opacity: 0.75; margin: 0 0 20px; }
+.section { font-size: 1.4rem; font-weight: 800; margin: 28px 0 14px; }
+.banner {
+  background: rgba(31, 138, 76, 0.2); color: #3ecf8e; border-radius: 14px;
+  padding: 16px 20px; font-weight: 600; margin-bottom: 8px;
 }
-
+.grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 900px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}
 .card {
-  border: 1px solid #e5e1d8;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 18px; padding: 22px;
 }
-
-.cardLink {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px 16px;
-  padding: 14px 16px;
-  color: inherit;
-  text-decoration: none;
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.meta { font-family: monospace; font-size: 0.8rem; opacity: 0.6; letter-spacing: 0.04em; }
+.restaurant { font-size: 1.3rem; font-weight: 800; margin: 4px 0 0; }
+.badgeDone {
+  background: rgba(31, 138, 76, 0.25); color: #3ecf8e; font-size: 0.85rem;
+  font-weight: 700; padding: 6px 12px; border-radius: 999px; white-space: nowrap;
 }
-
-.cardLink:focus-visible {
-  outline: 2px solid #1f6b4a;
-  outline-offset: 2px;
+.badgeLive {
+  background: rgba(255, 122, 51, 0.18); color: #ff7a33; font-size: 0.9rem;
+  font-weight: 700; padding: 8px 14px; border-radius: 999px; white-space: nowrap;
 }
-
-.cardRight {
-  display: grid;
-  justify-items: end;
-  gap: 4px;
+.tracker { margin: 22px 0 16px; position: relative; }
+.trackLine {
+  position: absolute; left: 16px; right: 16px; top: 14px; height: 4px;
+  background: rgba(128, 128, 128, 0.3); border-radius: 4px;
 }
-
-.badge {
-  font-size: 0.85rem;
-  color: #1f6b4a;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 24px;
-  align-items: start;
-  margin-top: 16px;
-}
-
-@media (max-width: 760px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-.headline {
-  margin: 0 0 16px;
-  font-size: 1.35rem;
-}
-
-.steps {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.step {
-  position: relative;
-  display: flex;
-  gap: 14px;
-  padding-bottom: 22px;
-}
-
-/* Connecting line below each dot. */
-.step::before {
-  content: "";
-  position: absolute;
-  left: 6px;
-  top: 18px;
-  bottom: 0;
-  width: 2px;
-  background: #e5e1d8;
-}
-
-.step:last-child::before {
-  display: none;
-}
-
+.trackFill { height: 100%; background: #ff7a33; border-radius: 4px; }
+.trackSteps { position: relative; display: flex; justify-content: space-between; }
+.trackStep { display: flex; flex-direction: column; align-items: center; width: 20%; }
 .dot {
-  flex: none;
-  position: relative;
-  z-index: 1;
-  width: 14px;
-  height: 14px;
-  margin-top: 3px;
-  border-radius: 50%;
-  border: 2px solid #cfc9bb;
-  background: #fff;
+  width: 30px; height: 30px; border-radius: 50%; border: 3px solid #ff7a33;
+  background: #1a1513; display: grid; place-items: center; font-size: 0.9rem;
 }
-
-.stepTitle {
-  font-weight: 600;
+.dotDone { background: #ff7a33; }
+.stepLabel { margin-top: 8px; font-size: 0.85rem; opacity: 0.55; text-align: center; }
+.stepDone { opacity: 1; font-weight: 700; }
+.statusBox {
+  background: rgba(128, 128, 128, 0.12); border-radius: 12px;
+  padding: 14px 16px; font-weight: 600; margin-bottom: 14px;
 }
-
-.done .dot {
-  background: #1f6b4a;
-  border-color: #1f6b4a;
+.items { opacity: 0.7; font-size: 0.95rem; margin: 14px 0; }
+.foot {
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px solid rgba(128, 128, 128, 0.2); padding-top: 14px; flex-wrap: wrap; gap: 10px;
 }
-
-.done::before {
-  background: #1f6b4a;
+.foot strong { font-size: 1.1rem; }
+.actions { display: flex; gap: 10px; }
+.ghostBtn {
+  padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(128, 128, 128, 0.35);
+  background: none; color: inherit; font-weight: 600; cursor: pointer;
 }
-
-.current .dot {
-  border-color: #1f6b4a;
-  box-shadow: 0 0 0 4px rgba(31, 107, 74, 0.18);
-}
-
-.upcoming .stepTitle {
-  font-weight: 400;
-  color: #8a8579;
+.primaryBtn {
+  padding: 10px 20px; border-radius: 999px; border: 0;
+  background: #ff7a33; color: #1a1a1a; font-weight: 700; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(255, 122, 51, 0.3);
 }

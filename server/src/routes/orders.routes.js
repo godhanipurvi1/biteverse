@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const crypto = require("crypto");
 const { requireAuth, optionalAuth } = require("../middleware/auth");
 const mongoose = require("mongoose");
@@ -10,17 +10,16 @@ const PAYMENTS = ["upi", "card", "cod"];
 const MAX_QTY = 50;
 const TRACK_CODE = /^[A-Za-z0-9_-]{12}$/;
 
-// Offer rules in rupees. Replace with a read from the offers collection once its fields are confirmed.
-const OFFERS = {
-  WELCOME10: { type: "percent", value: 10, max: 100, min: 200 },
-};
-
-function offerDiscount(code, subtotal) {
-  const o = OFFERS[code];
+// Offers come from the offers collection, the same source as GET /api/offers.
+// Amounts in that collection are stored in paise.
+async function offerDiscount(code, subtotal) {
+  const o = await mongoose.connection.db.collection("offers").findOne({ code, active: true });
   if (!o) return { error: "Offer code is not valid" };
-  if (subtotal < o.min) return { error: `Minimum order for ${code} is Rs ${o.min}` };
-  let d = o.type === "percent" ? Math.floor((subtotal * o.value) / 100) : o.value;
-  if (o.max && d > o.max) d = o.max;
+  const min = (o.minSubtotalInr ?? 0) / 100;
+  if (subtotal < min) return { error: `Minimum order for ${code} is Rs ${min}` };
+  let d = o.type === "percent" ? Math.floor((subtotal * o.value) / 100) : (o.value ?? 0) / 100;
+  const max = o.maxDiscountInr != null ? o.maxDiscountInr / 100 : null;
+  if (max && d > max) d = max;
   return { discount: Math.min(d, subtotal) };
 }
 
@@ -93,12 +92,10 @@ router.post("/", optionalAuth, async (req, res) => {
       let couponCode = null;
       const code = clean(body.couponCode).toUpperCase();
       if (code) {
-        if (!OFFERS[code]) return res.status(400).json({ message: "Offer code is not valid" });
-        const d = offerDiscount(code, subtotal);
-        if (!d.error) {
-          discount = d.discount;
-          couponCode = code;
-        }
+        const d = await offerDiscount(code, subtotal);
+        if (d.error) return res.status(400).json({ message: d.error });
+        discount = d.discount;
+        couponCode = code;
       }
 
       orderDocs.push({
@@ -115,6 +112,7 @@ router.post("/", optionalAuth, async (req, res) => {
         total: subtotal - discount + deliveryFee,
         customerId: req.customerId ? new ObjectId(req.customerId) : null,
         customer,
+        instructions: clean(body.instructions).slice(0, 200),
         payment: body.payment,
         status: "placed",
         statusHistory: [{ status: "placed", at: now }],

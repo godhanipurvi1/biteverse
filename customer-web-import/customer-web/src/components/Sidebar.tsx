@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -105,7 +105,7 @@ const ITEMS: Item[] = [
   },
   {
     label: "My orders",
-    href: "/#tracking",
+    href: "/orders",
     icon: (
       <Ico>
         <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" />
@@ -126,7 +126,7 @@ const ITEMS: Item[] = [
   },
   {
     label: "Help",
-    href: "/#help",
+    href: "/help",
     icon: (
       <Ico>
         <circle cx="12" cy="12" r="9" />
@@ -135,9 +135,7 @@ const ITEMS: Item[] = [
       </Ico>
     ),
   },
-];
-
-export default function Sidebar({ open, collapsed, onClose, cartCount, offersCount = 3 }: Props) {
+];export default function Sidebar({ open, collapsed, onClose, cartCount, offersCount = 3 }: Props) {
   const pathname = usePathname() ?? "/";
   const [hash, setHash] = useState("/#top");
 
@@ -189,7 +187,7 @@ export default function Sidebar({ open, collapsed, onClose, cartCount, offersCou
         </nav>
         <div className="promo">
           <p>Hungry right now? Your last order can be tracked live.</p>
-          <a href="/#tracking">Track order</a>
+          <a href="/track-order">Track order</a>
           <span className="ring" aria-hidden="true" />
         </div>
       </aside>
